@@ -624,50 +624,94 @@
     const provider = new GoogleAuthProvider();
     auth.languageCode = 'pt';
 
+    // Detecta se é dispositivo móvel
+    function isMobileDevice() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+               window.innerWidth <= 768;
+    }
+
     // --- VERIFICAÇÃO INICIAL (Recupera login após redirect) ---
-    // Se o utilizador voltar do Google, isto vai apanhar o login
     getRedirectResult(auth)
         .then((result) => {
             if (result) {
                 console.log("Login via redirecionamento recuperado com sucesso!");
-                // O onAuthStateChanged vai tratar de exibir o perfil
+                // Fecha o modal após login bem-sucedido
+                setTimeout(() => {
+                    fecharLogin();
+                    // Recarrega a página para atualizar o estado
+                    window.location.reload();
+                }, 500);
             }
         })
         .catch((error) => {
             console.error("Erro no retorno do login:", error);
-            // Ignora erro de popup fechado, alerta outros
-            if (error.code !== 'auth/popup-closed-by-user') {
-                // alert("Aviso: " + error.message); // Opcional: descomentar para debug
+            if (error.code !== 'auth/popup-closed-by-user' && 
+                error.code !== 'auth/cancelled-popup-request') {
+                console.warn("Erro no login:", error.message);
             }
         });
 
-    // 1. LOGIN GOOGLE (ESTRATÉGIA: POPUP PRIMEIRO)
+    // 1. LOGIN GOOGLE - ESTRATÉGIA OTIMIZADA PARA MOBILE
     window.fazerLoginGoogle = async () => {
         const btnGoogle = document.querySelector('.btn-google');
         const textoOriginal = btnGoogle.innerHTML;
         
         // Feedback visual imediato
         btnGoogle.innerHTML = '<div style="width:20px;height:20px;border:2px solid #fff;border-radius:50%;border-top-color:transparent;animation:spin 1s linear infinite;margin-right:8px;"></div> A conectar...';
+        btnGoogle.disabled = true;
         
         try {
-            // TENTA POPUP PRIMEIRO (Funciona melhor na maioria dos casos agora)
-            await signInWithPopup(auth, provider);
-            // Se der certo, fecha o modal (o onAuthStateChanged faz o resto)
-            fecharLogin(); 
-            
-        } catch (error) {
-            console.log("Popup falhou, tentando redirecionamento...", error);
-            
-            // SE O POPUP FALHAR (Bloqueador ou erro), TENTA REDIRECT
-            try {
-                // Aviso antes de redirecionar para o usuário não estranhar
-                btnGoogle.innerHTML = "Redirecionando...";
+            // ESTRATÉGIA DIFERENCIADA POR DISPOSITIVO
+            if (isMobileDevice()) {
+                console.log("Dispositivo móvel detectado - usando redirecionamento");
+                // NO MOBILE: SEMPRE USA REDIRECT (mais confiável)
                 await signInWithRedirect(auth, provider);
-            } catch (err2) {
-                console.error("Erro fatal no login:", err2);
-                alert("Não foi possível conectar. Tente abrir o site no navegador Chrome.");
-                btnGoogle.innerHTML = textoOriginal;
+                // A página será redirecionada, então não fazemos mais nada aqui
+                return;
+            } else {
+                // NO DESKTOP: TENTA POPUP PRIMEIRO
+                try {
+                    await signInWithPopup(auth, provider);
+                    fecharLogin();
+                } catch (popupError) {
+                    console.log("Popup falhou, tentando redirecionamento...", popupError);
+                    // Fallback para redirect no desktop também
+                    await signInWithRedirect(auth, provider);
+                }
             }
+        } catch (error) {
+            console.error("Erro fatal no login:", error);
+            
+            // Mensagens de erro amigáveis
+            let mensagemErro = "Não foi possível conectar. ";
+            if (error.code === 'auth/popup-blocked') {
+                mensagemErro += "O popup foi bloqueado. Tente novamente ou use outro navegador.";
+            } else if (error.code === 'auth/popup-closed-by-user') {
+                mensagemErro = "Login cancelado.";
+            } else {
+                mensagemErro += "Tente novamente.";
+            }
+            
+            // Recria o botão original
+            btnGoogle.innerHTML = textoOriginal;
+            btnGoogle.disabled = false;
+            
+            // Mostra mensagem de erro (não-alert para melhor UX)
+            const erroDiv = document.createElement('div');
+            erroDiv.style.cssText = 'background:#ffebee;color:#c62828;padding:10px;border-radius:8px;margin-top:10px;font-size:0.85rem;';
+            erroDiv.innerHTML = `<strong>⚠️ Atenção:</strong> ${mensagemErro}`;
+            
+            // Remove mensagens anteriores
+            const mensagensAnteriores = btnGoogle.parentNode.querySelector('.erro-login');
+            if (mensagensAnteriores) mensagensAnteriores.remove();
+            
+            erroDiv.className = 'erro-login';
+            btnGoogle.parentNode.appendChild(erroDiv);
+            
+            // Remove a mensagem após 5 segundos
+            setTimeout(() => {
+                if (erroDiv.parentNode) erroDiv.remove();
+            }, 5000);
         }
     };
 
@@ -675,10 +719,11 @@
     window.fazerLogout = async () => {
         try {
             await signOut(auth);
-            alert("Desconectado com sucesso.");
+            // Recarrega para limpar estado
             window.location.reload();
         } catch (error) {
             console.error("Erro ao sair:", error);
+            alert("Erro ao desconectar. Tente novamente.");
         }
     };
 
@@ -696,12 +741,29 @@
     window.abrirLogin = () => { 
         document.getElementById('modalLogin').style.display = 'flex'; 
         const user = auth.currentUser;
-        if (user) { mostrarPerfil(user); } else { mostrarSocial(); }
+        if (user) { 
+            mostrarPerfil(user); 
+        } else { 
+            mostrarSocial(); 
+        }
     };
     
-    window.fecharLogin = () => { document.getElementById('modalLogin').style.display = 'none'; };
-    window.mostrarFormulario = () => { esconderTudo(); document.getElementById('viewEmail').style.display = 'block'; };
-    window.mostrarSocial = () => { esconderTudo(); document.getElementById('viewSocial').style.display = 'block'; };
+    window.fecharLogin = () => { 
+        document.getElementById('modalLogin').style.display = 'none'; 
+        // Limpa mensagens de erro ao fechar
+        const erros = document.querySelectorAll('.erro-login');
+        erros.forEach(erro => erro.remove());
+    };
+    
+    window.mostrarFormulario = () => { 
+        esconderTudo(); 
+        document.getElementById('viewEmail').style.display = 'block'; 
+    };
+    
+    window.mostrarSocial = () => { 
+        esconderTudo(); 
+        document.getElementById('viewSocial').style.display = 'block'; 
+    };
 
     // 5. MOSTRAR PERFIL
     window.mostrarPerfil = (user) => {
@@ -709,11 +771,13 @@
         document.getElementById('viewLogged').style.display = 'block';
         document.getElementById('nomeUsuarioLogado').innerText = user.displayName || "Cliente";
         document.getElementById('emailUsuarioLogado').innerText = user.email;
-        if (user.photoURL) document.getElementById('imgPerfilUsuario').src = user.photoURL;
+        if (user.photoURL) {
+            document.getElementById('imgPerfilUsuario').src = user.photoURL;
+        }
         buscarAgendamentosReal(user);
     };
 
-    // 6. BUSCAR AGENDAMENTOS
+    // 6. BUSCAR AGENDAMENTOS (mantido igual)
     async function buscarAgendamentosReal(user) {
         const listaContainer = document.getElementById('containerAgendamentos');
         const contadorElement = document.getElementById('contadorAgendamentos');
@@ -771,15 +835,21 @@
             listaContainer.innerHTML = agendamentosHTML;
         } catch (error) {
             console.error(error);
-            listaContainer.innerHTML = `<div style="color:#721c24; background:#f8d7da; padding:15px; border-radius:8px;">Erro ao carregar.</div>`;
+            listaContainer.innerHTML = `<div style="color:#721c24; background:#f8d7da; padding:15px; border-radius:8px;">Erro ao carregar agendamentos.</div>`;
         }
     }
 
     // FUNÇÕES AUXILIARES
     function converterDataStringParaTimestamp(dataString) {
         if (!dataString || !dataString.includes('/')) return 0;
-        try { const [d, m, a] = dataString.split('/').map(Number); return new Date(a, m - 1, d).getTime(); } catch (e) { return 0; }
+        try { 
+            const [d, m, a] = dataString.split('/').map(Number); 
+            return new Date(a, m - 1, d).getTime(); 
+        } catch (e) { 
+            return 0; 
+        }
     }
+    
     function formatarData(dataString) {
         if (!dataString) return "";
         if (dataString.includes('/')) {
@@ -789,17 +859,43 @@
         }
         return dataString;
     }
-    function getStatusClass(s) { const c = { 'confirmado': 'status-confirmado', 'pendente': 'status-pendente', 'cancelado': 'status-cancelado', 'realizado': 'status-realizado' }; return c[s] || 'status-confirmado'; }
-    function getStatusText(s) { const t = { 'confirmado': 'Confirmado', 'pendente': 'Pendente', 'cancelado': 'Cancelado', 'realizado': 'Realizado' }; return t[s] || 'Confirmado'; }
-    function esconderTudo() { document.getElementById('viewEmail').style.display = 'none'; document.getElementById('viewSocial').style.display = 'none'; document.getElementById('viewLogged').style.display = 'none'; }
-    window.toggleSenha = () => { const i = document.getElementById('senhaInput'); i.type = i.type === "password" ? "text" : "password"; };
+    
+    function getStatusClass(s) { 
+        const c = { 
+            'confirmado': 'status-confirmado', 
+            'pendente': 'status-pendente', 
+            'cancelado': 'status-cancelado', 
+            'realizado': 'status-realizado' 
+        }; 
+        return c[s] || 'status-confirmado'; 
+    }
+    
+    function getStatusText(s) { 
+        const t = { 
+            'confirmado': 'Confirmado', 
+            'pendente': 'Pendente', 
+            'cancelado': 'Cancelado', 
+            'realizado': 'Realizado' 
+        }; 
+        return t[s] || 'Confirmado'; 
+    }
+    
+    function esconderTudo() { 
+        document.getElementById('viewEmail').style.display = 'none'; 
+        document.getElementById('viewSocial').style.display = 'none'; 
+        document.getElementById('viewLogged').style.display = 'none'; 
+    }
+    
+    window.toggleSenha = () => { 
+        const i = document.getElementById('senhaInput'); 
+        i.type = i.type === "password" ? "text" : "password"; 
+    };
 
-    // 7. MONITORAR ESTADO
-    // Esta é a parte mais importante. Ela roda automaticamente assim que o Firebase percebe que estás logado.
+    // 7. MONITORAR ESTADO DO USUÁRIO
     onAuthStateChanged(auth, (user) => {
         const btnHome = document.getElementById('btnEntrar');
         if (user) {
-            // Se logou, atualiza botão e mostra perfil
+            // Usuário logado
             btnHome.innerHTML = `<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg> ${user.displayName || 'Cliente'}`;
             btnHome.classList.add('logado');
             
@@ -808,18 +904,43 @@
                 mostrarPerfil(user);
             }
         } else {
-            // Se deslogou
+            // Usuário deslogado
             btnHome.innerHTML = `<svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg> Entrar`;
             btnHome.classList.remove('logado');
-            btnHome.style.color = 'var(--cor-principal)';
         }
     });
 
+    // Adiciona CSS para animação do spinner
     const style = document.createElement('style');
-    style.textContent = `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`;
+    style.textContent = `
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+        
+        /* Estilo para dispositivos móveis */
+        @media (max-width: 768px) {
+            .btn-google:disabled {
+                opacity: 0.7;
+            }
+        }
+    `;
     document.head.appendChild(style);
+
+    // Verifica se há usuário logado ao carregar a página
+    // Útil para quando o usuário retorna de um redirect
+    window.addEventListener('load', () => {
+        const user = auth.currentUser;
+        if (user && document.getElementById('modalLogin').style.display === 'none') {
+            // Atualiza o botão mesmo que o modal não esteja aberto
+            const btnHome = document.getElementById('btnEntrar');
+            btnHome.innerHTML = `<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg> ${user.displayName || 'Cliente'}`;
+            btnHome.classList.add('logado');
+        }
+    });
 </script>
 
 </body>
 
 </html>
+
