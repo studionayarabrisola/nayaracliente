@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Serviços | Nayara Brisola</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- IDENTIDADE VISUAL --- */
+        :root {
+            --cor-fundo: #f0f8ff; 
+            --cor-principal: #006080; 
+            --cor-clara: #4cc9f0; 
+            --cor-texto: #2c3e50; 
+            --branco: #ffffff;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(180deg, var(--cor-fundo) 0%, #ffffff 100%);
+            color: var(--cor-texto);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100dvh;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        /* --- ANIMAÇÕES GERAIS --- */
+        @keyframes surgirSuave {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes respirarLuz {
+            0% { box-shadow: 0 0 0 0 rgba(76, 201, 240, 0.4); }
+            50% { box-shadow: 0 0 15px 3px rgba(76, 201, 240, 0.2); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 201, 240, 0.4); }
+        }
+
+        @keyframes pulsarBrilho {
+            0% { box-shadow: 0 0 0 0 rgba(76, 201, 240, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(76, 201, 240, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 201, 240, 0); }
+        }
+
+        /* --- CABEÇALHO --- */
+        header {
+            background-color: var(--branco);
+            width: 100%;
+            padding: 30px 20px 25px;
+            text-align: center;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            box-shadow: 0 4px 25px rgba(0, 96, 128, 0.05);
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 10;
+            animation: surgirSuave 1s ease-out;
+        }
+
+        .nome-header {
+            font-family: 'Dancing Script', cursive;
+            color: var(--cor-clara); 
+            font-size: 2.5rem;
+            line-height: 1;
+            margin: 0;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: transform 0.2s ease, color 0.2s ease;
+            display: inline-block;
+        }
+
+        .nome-header:active {
+            transform: scale(1.1);
+            color: var(--cor-principal);
+        }
+
+        .titulo-pagina {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--cor-principal);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 600;
+            margin-top: 8px;
+            opacity: 0.9;
+        }
+
+        /* --- CONTAINER --- */
+        .container-servicos {
+            width: 90%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            padding-bottom: 20px;
+            flex: 1;
+        }
+
+        /* CARD DE SERVIÇO */
+        .card-servico {
+            background: var(--branco);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 96, 128, 0.06);
+            border: 2px solid transparent;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+
+            opacity: 0; 
+            animation: surgirSuave 0.8s ease-out forwards;
+            transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.3s;
+        }
+
+        /* Delay para Efeito Cascata (1, 2, 3...) */
+        .card-servico:nth-child(1) { animation-delay: 0.2s; }
+        .card-servico:nth-child(2) { animation-delay: 0.4s; }
+        .card-servico:nth-child(3) { animation-delay: 0.6s; } 
+
+        .card-servico:active {
+            transform: scale(0.96);
+            background-color: #f8fdff;
+        }
+
+        .card-servico:hover {
+            border-color: var(--cor-clara);
+            box-shadow: 0 15px 35px rgba(76, 201, 240, 0.15);
+            transform: translateY(-5px);
+        }
+
+        /* FOTOS ANIMADAS */
+       .moldura-foto {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            animation: respirarLuz 3s infinite ease-in-out;
+            transition: transform 0.4s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+        }
+
+       .moldura-foto img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            object-position: center 20%; 
+            border-radius: 50%; 
+            border: 4px solid white; 
+        }
+
+        .titulo-servico {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--cor-principal); 
+            margin-bottom: 8px;
+        }
+
+        .detalhes {
+            font-size: 0.95rem;
+            color: #607d8b; 
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .info-tags {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .tag {
+            background-color: #f0f8ff;
+            color: var(--cor-principal);
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tag.preco {
+            background-color: rgba(76, 201, 240, 0.1); 
+            color: #008fb3; 
+            border: 1px solid rgba(76, 201, 240, 0.2);
+        }
+
+        .btn-selecionar {
+            margin-top: 25px;
+            background: linear-gradient(90deg, var(--cor-principal) 0%, #008fb3 100%);
+            color: white;
+            border: none;
+            padding: 12px 0;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: pulsarBrilho 2.5s infinite;
+        }
+
+        .area-voltar {
+            width: 90%;
+            max-width: 500px;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: surgirSuave 1s ease-out 0.8s forwards; 
+        }
+
+        .btn-voltar {
+            display: block;
+            width: 100%;
+            padding: 15px 0;
+            text-align: center;
+            color: var(--cor-principal);
+            background-color: transparent;
+            border: 2px solid var(--cor-principal);
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+
+        .btn-voltar:active {
+            background-color: var(--cor-principal);
+            color: white;
+            transform: scale(0.98);
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 20px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #8899a6;
+            background-color: var(--branco);
+            width: 100%;
+            border-top: 1px solid #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="marca-header">
+            <h1 class="nome-header" onclick="">Nayara Brisola</h1>
+            <p class="titulo-pagina">Selecione o Procedimento</p>
+        </div>
+    </header>
+
+    <div class="container-servicos">
+
+        <div class="card-servico" onclick="escolherServico('Volume Brasileiro', window.precosAtuais.volume, 3)">
+            <div class="moldura-foto">
+                <img src="images (1).jpg" alt="Cílios Volume Brasileiro">
+            </div>
+            
+            <div class="titulo-servico">Volume Brasileiro</div>
+            <div class="detalhes">Técnica exclusiva fio a fio para volume intenso e acabamento natural.</div>
+            
+            <div class="info-tags">
+                <div class="tag">⏱ 3 horas</div>
+                <div class="tag preco" id="tagPrecoVolume">Carregando...</div>
+            </div>
+
+            <button class="btn-selecionar">Agendar</button>
+        </div>
+
+        <div class="card-servico" onclick="escolherServico('Design de Sobrancelha', window.precosAtuais.design, 1)">
+            <div class="moldura-foto">
+                <img src="sombrancelhapng.png" alt="Design Simples">
+            </div>
+
+            <div class="titulo-servico">Design de Sobrancelha</div>
+            <div class="detalhes">Limpeza e design personalizado para harmonizar o rosto.</div>
+            
+            <div class="info-tags">
+                <div class="tag">⏱ 1 hora</div>
+                <div class="tag preco" id="tagPrecoDesign">Carregando...</div>
+            </div>
+
+            <button class="btn-selecionar">Agendar</button>
+        </div>
+
+        <div class="card-servico" onclick="escolherServico('Design com Henna', window.precosAtuais.henna, 1)">
+            <div class="moldura-foto">
+                <img src="design-de-sobrancelhas.webp" alt="Design com Henna">
+            </div>
+
+            <div class="titulo-servico">Design com Henna</div>
+            <div class="detalhes">Design completo com aplicação de henna para preenchimento e definição.</div>
+            
+            <div class="info-tags">
+                <div class="tag">⏱ 1 hora</div>
+                <div class="tag preco" id="tagPrecoHenna">Carregando...</div>
+            </div>
+
+            <button class="btn-selecionar">Agendar</button>
+        </div>
+
+    </div>
+
+    <div class="area-voltar">
+        <a href="index.html" class="btn-voltar">
+            ❮ Voltar ao Início
+        </a>
+    </div>
+
+    <footer>
+        &copy; 2025 Nayara Brisola 
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        // NOVA IMPORTAÇÃO: Firestore
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCLkHAL6V4xwfuLJbRYhnZcIAWRo6D2c1M",
+            authDomain: "agendanayara-e900b.firebaseapp.com",
+            projectId: "agendanayara-e900b",
+            storageBucket: "agendanayara-e900b.firebasestorage.app",
+            messagingSenderId: "306081027760",
+            appId: "1:306081027760:web:0cbdac4448e2672069cd75"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Preços padrão iniciais (segurança caso falhe a internet)
+        window.precosAtuais = {
+            volume: 80,
+            design: 20,
+            henna: 35
+        };
+
+        // --- NOVA FUNÇÃO: Busca preços no Banco de Dados ---
+        async function carregarPrecosDoBanco() {
+            try {
+                // Busca o documento onde salvamos os preços no painel admin
+                const docRef = doc(db, "configuracoes_gerais", "tabela_precos");
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const dados = docSnap.data();
+                    
+                    // Atualiza a variável global que é usada no clique
+                    if(dados.volume) window.precosAtuais.volume = dados.volume;
+                    if(dados.design) window.precosAtuais.design = dados.design;
+                    if(dados.henna) window.precosAtuais.henna = dados.henna;
+
+                    // Atualiza o texto visual na tela
+                    document.getElementById('tagPrecoVolume').innerText = `R$ ${dados.volume},00`;
+                    document.getElementById('tagPrecoDesign').innerText = `R$ ${dados.design},00`;
+                    document.getElementById('tagPrecoHenna').innerText = `R$ ${dados.henna},00`;
+                } else {
+                    // Se não existir configuração, mostra o padrão
+                    atualizarTagsPadrao();
+                }
+            } catch (error) {
+                console.error("Erro ao buscar preços:", error);
+                atualizarTagsPadrao();
+            }
+        }
+
+        function atualizarTagsPadrao() {
+            document.getElementById('tagPrecoVolume').innerText = `R$ ${window.precosAtuais.volume},00`;
+            document.getElementById('tagPrecoDesign').innerText = `R$ ${window.precosAtuais.design},00`;
+            document.getElementById('tagPrecoHenna').innerText = `R$ ${window.precosAtuais.henna},00`;
+        }
+
+        // --- VERIFICAÇÃO DE SEGURANÇA ---
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = 'index.html';
+            } else {
+                console.log("Cliente autenticado:", user.displayName);
+                // Assim que confirmar o login, busca os preços reais
+                carregarPrecosDoBanco();
+            }
+        });
+
+        // Função global de escolha
+        window.escolherServico = function(nomeServico, preco, duracaoHoras) {
+            const escolha = {
+                servico: nomeServico,
+                valor: preco, // Agora usa o valor dinâmico passado no onclick
+                duracao: duracaoHoras
+            };
+            localStorage.setItem('servicoSelecionado', JSON.stringify(escolha));
+
+            setTimeout(() => {
+                window.location.href = 'agendamento.html';
+            }, 150);
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nayara Brisola | Lashe Designer</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@300;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CONFIGURAÇÕES GERAIS --- */
+        :root {
+            --cor-fundo: #f0f8ff; 
+            --cor-principal: #006080; 
+            --cor-clara: #4cc9f0; 
+            --cor-texto: #2c3e50; 
+            --branco: #ffffff;
+            --cor-sucesso: #009e60; /* Verde da imagem */
+            --cor-pendente: #ff9800;
+            --cor-cancelado: #f44336;
+            --cor-realizado: #4caf50;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(180deg, var(--cor-fundo) 0%, #ffffff 100%);
+            color: var(--cor-texto);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        /* --- ANIMAÇÕES --- */
+        @keyframes surgirSuave { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes respirarLuz { 0%, 100% { box-shadow: 0 0 0 0 rgba(76, 201, 240, 0.4); } 50% { box-shadow: 0 0 25px 5px rgba(76, 201, 240, 0.2); } }
+        @keyframes pulsarBrilho { 0%, 100% { box-shadow: 0 0 0 0 rgba(76, 201, 240, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(76, 201, 240, 0); } }
+        @keyframes fadeOverlay { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popModal { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes slideInRight { from { transform: translateX(50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeInItem { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- CONTAINER PRINCIPAL --- */
+        .container {
+            position: relative; 
+            max-width: 500px;
+            width: 85%;
+            text-align: center;
+            background: var(--branco);
+            padding: 40px 20px;
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0, 96, 128, 0.15);
+            animation: surgirSuave 1.5s ease-out;
+            margin: 20px auto;
+        }
+
+        /* --- BOTÃO ENTRAR / PERFIL (TOPO) --- */
+        .btn-login-interno {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            z-index: 10;
+            background: transparent;
+            border: none;
+            color: var(--cor-principal); 
+            font-size: 0.95rem; /* Ajuste leve para caber nomes maiores */
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .btn-login-interno svg {
+            width: 24px;
+            height: 24px;
+            fill: none;
+            stroke: currentColor; /* Pega a cor do texto */
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: stroke 0.3s;
+        }
+
+        /* Estado Logado (Verde) */
+        .btn-login-interno.logado {
+            color: var(--cor-sucesso);
+        }
+
+        .btn-login-interno:hover { transform: translateX(2px); opacity: 0.8; }
+
+        /* --- FOTO PERFIL --- */
+        .moldura-foto {
+            width: 160px;
+            height: 160px;
+            margin: 10px auto 20px auto; 
+            border-radius: 50%;
+            overflow: hidden;
+            animation: respirarLuz 3s infinite ease-in-out;
+            cursor: pointer;
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .moldura-foto img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            object-position: center 20%;
+            border-radius: 50%; 
+            border: 4px solid white; 
+        }
+        .moldura-foto:active { transform: scale(0.95); filter: brightness(0.9); }
+
+        /* --- TEXTOS --- */
+        h1 {
+            font-family: 'Dancing Script', cursive;
+            color: var(--cor-clara);
+            font-size: 3rem;
+            margin-bottom: 0px;
+            line-height: 1.2;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        h1:active { transform: scale(1.05); }
+
+        h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.9rem;
+            color: var(--cor-principal);
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        .descricao { font-size: 1rem; line-height: 1.6; color: #555; margin-bottom: 35px; }
+
+        /* --- BOTÃO AGENDAR --- */
+        .btn-inicio {
+            background: linear-gradient(90deg, var(--cor-principal) 0%, #008fb3 100%);
+            color: white;
+            padding: 18px 0;
+            width: 100%;
+            max-width: 300px;
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: transform 0.2s;
+            animation: pulsarBrilho 2s infinite;
+        }
+        .btn-inicio:active { transform: scale(0.95); }
+
+        footer { margin-top: 30px; font-size: 0.75rem; color: #8899a6; padding-bottom: 20px; }
+
+        /* --- MODAL (CONFIGURAÇÕES) --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeOverlay 0.3s;
+        }
+
+        .modal-login {
+            background: white;
+            width: 90%;
+            max-width: 400px; /* Aumentado para caber melhor os agendamentos */
+            padding: 30px;
+            border-radius: 25px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            position: relative;
+            animation: popModal 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden; 
+        }
+
+        .btn-fechar {
+            position: absolute;
+            top: 15px; right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #ccc;
+            background: none;
+            border: none;
+            z-index: 20;
+        }
+        .btn-fechar:hover { color: #666; }
+
+        /* TELA 1: SOCIAL */
+        .view-section { width: 100%; }
+        
+        .icone-login { font-size: 40px; color: var(--cor-principal); margin-bottom: 10px; }
+        .titulo-login { font-size: 1.4rem; color: var(--cor-principal); font-weight: bold; margin-bottom: 20px; }
+        .aviso-box {
+            background-color: #e0f7fa; color: #006080;
+            padding: 15px; border-radius: 12px; font-size: 0.85rem;
+            margin-bottom: 25px; border-left: 4px solid var(--cor-clara);
+            text-align: left; line-height: 1.4;
+        }
+
+        .btn-social {
+            display: flex; align-items: center; justify-content: center;
+            width: 100%; padding: 12px; border-radius: 50px;
+            margin-bottom: 15px; font-size: 0.95rem; font-weight: 600;
+            cursor: pointer; transition: transform 0.2s; border: 2px solid #eee;
+            background: white; color: #555; gap: 10px;
+        }
+        .btn-social:active { transform: scale(0.98); }
+        .btn-google img { width: 20px; }
+        
+        .btn-email { background-color: var(--cor-principal); color: white; border: none; }
+        .btn-email:hover { background-color: #004d66; }
+
+        /* TELA 2: FORMULÁRIO */
+        #viewEmail { display: none; animation: slideInRight 0.3s ease-out; }
+
+        .btn-voltar-modal {
+            position: absolute; top: 20px; left: 20px;
+            background: none; border: 1px solid #eee; border-radius: 20px;
+            color: var(--cor-principal); padding: 5px 15px; font-size: 0.8rem;
+            cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 5px;
+        }
+        .btn-voltar-modal:hover { background-color: #f9f9f9; }
+
+        .marca-login {
+            font-family: 'Dancing Script', cursive;
+            color: var(--cor-clara);
+            font-size: 2.2rem;
+            margin-top: 30px;
+            margin-bottom: 5px;
+            line-height: 1.1;
+        }
+        
+        .subtitulo-login { font-size: 0.9rem; color: #888; margin-bottom: 30px; }
+
+        /* Inputs */
+        .input-group { position: relative; margin-bottom: 20px; text-align: left; }
+        .input-group label { font-size: 0.75rem; color: #888; margin-left: 15px; margin-bottom: 5px; display: block; font-weight: 600; }
+        .input-wrapper { position: relative; }
+
+        .input-icon {
+            position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
+            display: flex; align-items: center;
+        }
+        .input-icon svg { width: 20px; height: 20px; stroke: #aaa; fill: none; stroke-width: 1.5; transition: stroke 0.3s; }
+
+        .input-custom {
+            width: 100%; padding: 14px 45px;
+            border: 1px solid #ddd; border-radius: 25px;
+            font-size: 0.95rem; color: #333; outline: none; box-sizing: border-box;
+            background-color: #fcfcfc; transition: border-color 0.3s;
+        }
+        .input-custom:focus { border-color: var(--cor-principal); background-color: white; }
+        
+        .toggle-senha {
+            position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+            cursor: pointer; display: flex; align-items: center;
+        }
+        .toggle-senha svg { width: 20px; height: 20px; stroke: #aaa; fill: none; stroke-width: 1.5; }
+        .toggle-senha:hover svg { stroke: var(--cor-principal); }
+
+        .btn-entrar-form {
+            width: 100%; padding: 14px; background-color: var(--cor-principal);
+            color: white; border: none; border-radius: 25px;
+            font-size: 1rem; font-weight: bold; margin-top: 10px; cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 96, 128, 0.2);
+        }
+        .btn-entrar-form:active { transform: scale(0.98); }
+
+        .footer-login-links {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .link-simples {
+            font-size: 0.85rem;
+            color: #777; 
+            text-decoration: none; 
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .link-simples:hover { color: var(--cor-principal); }
+        .link-simples strong { color: var(--cor-principal); font-weight: 700; }
+
+        /* --- TELA 3: PERFIL LOGADO (NOVA) --- */
+        #viewLogged { display: none; animation: slideInRight 0.3s ease-out; }
+        
+        .perfil-header {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+        .perfil-foto-area {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 10px auto;
+            background-color: #eee;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .perfil-foto-area img { width: 100%; height: 100%; object-fit: cover; }
+
+        .lista-agendamentos {
+            text-align: left;
+            max-height: 300px; /* Aumentado para mostrar mais agendamentos */
+            overflow-y: auto;
+            margin-bottom: 25px;
+            padding-right: 5px;
+        }
+        /* Spinner de carregamento dentro da lista */
+        .loading-spinner {
+            text-align: center;
+            color: #888;
+            padding: 20px;
+            font-size: 0.9rem;
+        }
+
+        /* Scrollbar fina para a lista */
+        .lista-agendamentos::-webkit-scrollbar { width: 6px; }
+        .lista-agendamentos::-webkit-scrollbar-thumb { background-color: #ddd; border-radius: 3px; }
+
+        .item-agendamento {
+            background: #f9f9f9;
+            border-left: 4px solid var(--cor-clara);
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: fadeInItem 0.3s ease-out;
+            transition: transform 0.2s;
+        }
+        
+        .item-agendamento:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .info-agenda { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 4px;
+            flex: 1;
+        }
+        .data-hora { 
+            font-weight: bold; 
+            color: var(--cor-principal);
+            font-size: 0.95rem;
+        }
+        .servico-nome { 
+            color: #555; 
+            font-size: 0.85rem;
+        }
+        .preco-agenda {
+            color: var(--cor-sucesso);
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-top: 2px;
+        }
+        
+        .status-badge {
+            font-size: 0.7rem; 
+            padding: 4px 10px; 
+            border-radius: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+            margin-left: 10px;
+        }
+
+        .status-confirmado {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-pendente {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-cancelado {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-realizado {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .btn-sair {
+            background-color: #ffebee;
+            color: #d32f2f;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-sair:hover { background-color: #ffcdd2; }
+
+        /* Contador de agendamentos */
+        .contador-agendamentos {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            background: linear-gradient(90deg, #f0f8ff, #e0f7fa);
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .contador-numero {
+            background: var(--cor-principal);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        /* Mensagem quando não há agendamentos */
+        .sem-agendamentos {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+        
+        .sem-agendamentos-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 480px) {
+            .container { width: 88%; padding: 30px 20px; margin-top: 30px; }
+            .moldura-foto { width: 140px; height: 140px; }
+            h1 { font-size: 2.5rem; }
+            .btn-login-interno { top: 20px; left: 20px; }
+            .modal-login { max-width: 90%; padding: 20px; }
+            .lista-agendamentos { max-height: 250px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <button id="btnEntrar" class="btn-login-interno" onclick="abrirLogin()">
+            <svg viewBox="0 0 24 24">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                <polyline points="10 17 15 12 10 7"></polyline>
+                <line x1="15" y1="12" x2="3" y2="12"></line>
+            </svg>
+            Entrar
+        </button>
+        
+        <div class="moldura-foto" onclick="">
+            <img src="petista.jpg" alt="Logo Nayara Brisola">
+        </div>
+
+        <h1 onclick="">Nayara Brisola</h1>
+        <h2>Lashe Designer</h2>
+
+        <div class="descricao">
+            <p>Realce o seu olhar com técnicas exclusivas de <strong>Volume Brasileiro</strong> e <strong>Design de Sobrancelhas</strong>.</p>
+            <p>Conforto e beleza natural.</p>
+        </div>
+
+        <a href="#" onclick="verificarLogin()" class="btn-inicio">Agendar Horário</a>
+    </div>
+
+    <footer>
+        &copy; 2025 Nayara Brisola
+    </footer>
+
+    <div id="modalLogin" class="modal-overlay">
+        <div class="modal-login">
+            <button class="btn-fechar" onclick="fecharLogin()">&times;</button>
+            
+            <div id="viewSocial" class="view-section">
+                <div class="icone-login">🔐</div>
+                <div class="titulo-login">Área do Cliente</div>
+
+                <div class="aviso-box">
+                    <strong>Importante:</strong><br>
+                    É necessário fazer login para realizar o agendamento.
+                </div>
+
+                <button class="btn-social btn-google" onclick="fazerLoginGoogle()">
+                    <svg width="20" height="20" viewBox="0 0 48 48">
+                        <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path>
+                        <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path>
+                        <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path>
+                        <path fill="#1976D2" d="M43.611,20.083L43.611,20.083C43.862,21.35,44,22.659,44,24c0,5.61-2.066,10.875-5.591,14.808l-6.19-5.238C33.21,32.571,34.025,31.309,34.591,29.897C35.842,26.791,36,23.473,34.996,20.083H43.611z"></path>
+                    </svg>
+                    Continuar com Google
+                </button>
+
+                <button class="btn-social btn-email" onclick="mostrarFormulario()">
+                     Continuar com Email
+                </button>
+            </div>
+
+            <div id="viewEmail" class="view-section">
+                <button class="btn-voltar-modal" onclick="mostrarSocial()">← Voltar</button>
+                <div class="marca-login">Nayara Brisola</div>
+                <div class="subtitulo-login">Use sua conta para logar</div>
+                
+                <div class="input-group">
+                    <label>Email *</label>
+                    <div class="input-wrapper">
+                        <div class="input-icon">
+                            <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                        </div>
+                        <input type="email" id="emailInput" class="input-custom" placeholder="exemplo@gmail.com">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Senha *</label>
+                    <div class="input-wrapper">
+                        <div class="input-icon">
+                            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        </div>
+                        <input type="password" id="senhaInput" class="input-custom" placeholder="••••••••">
+                        <span class="toggle-senha" onclick="toggleSenha()">
+                            <svg id="iconeOlho" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </span>
+                    </div>
+                </div>
+
+                <button class="btn-entrar-form" onclick="alert('Use o Google para entrar mais rápido!')">Entrar</button>
+
+                <div class="footer-login-links">
+                    <a href="#" class="link-simples">Esqueceu sua senha?</a>
+                    <a href="#" class="link-simples"><strong>Crie sua conta</strong></a>
+                </div>
+            </div>
+
+            <div id="viewLogged" class="view-section">
+                <div class="perfil-header">
+                    <div class="perfil-foto-area">
+                        <img id="imgPerfilUsuario" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Perfil">
+                    </div>
+                    <div class="titulo-login" id="nomeUsuarioLogado" style="margin-bottom:5px;">Carregando...</div>
+                    <div class="subtitulo-login" id="emailUsuarioLogado" style="margin-bottom:15px; font-size:0.8rem;">...</div>
+                </div>
+
+                <h3 style="color:var(--cor-principal); font-size:1rem; margin-bottom:15px; text-align:left; border-bottom:1px solid #eee; padding-bottom:5px;">
+                    📅 Seus Agendamentos
+                </h3>
+
+                <div class="contador-agendamentos" id="contadorAgendamentos" style="display: none;">
+                    <span>Total: <span class="contador-numero" id="totalAgendamentos">0</span></span>
+                    <span id="statusFiltro" style="color:#666; font-size:0.8rem;"></span>
+                </div>
+
+                <div class="lista-agendamentos" id="containerAgendamentos">
+                    <div class="loading-spinner">🔍 Buscando seus agendamentos...</div>
+                </div>
+
+                <button class="btn-sair" onclick="fazerLogout()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Sair da Conta
+                </button>
+            </div>
+        </div>
+    </div>
+
+   <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // SUA CONFIGURAÇÃO
+    const firebaseConfig = {
+        apiKey: "AIzaSyCLkHAL6V4xwfuLJbRYhnZcIAWRo6D2c1M",
+        authDomain: "agendanayara-e900b.firebaseapp.com",
+        projectId: "agendanayara-e900b",
+        storageBucket: "agendanayara-e900b.firebasestorage.app",
+        messagingSenderId: "306081027760",
+        appId: "1:306081027760:web:0cbdac4448e2672069cd75"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+    auth.languageCode = 'pt';
+
+    // 1. LOGIN GOOGLE
+    window.fazerLoginGoogle = async () => {
+        const btnGoogle = document.querySelector('.btn-google');
+        const textoOriginal = btnGoogle.innerHTML;
+        btnGoogle.innerHTML = '<div style="width:20px;height:20px;border:2px solid #fff;border-radius:50%;border-top-color:transparent;animation:spin 1s linear infinite;margin-right:8px;"></div> Aguarde...';
+        
+        try {
+            await signInWithPopup(auth, provider);
+            fecharLogin();
+        } catch (error) {
+            console.error("Erro:", error);
+            alert("Erro ao logar com Google.");
+            btnGoogle.innerHTML = textoOriginal;
+        }
+    };
+
+    // 2. LOGOUT
+    window.fazerLogout = async () => {
+        try {
+            await signOut(auth);
+            alert("Desconectado com sucesso.");
+            fecharLogin();
+        } catch (error) {
+            console.error("Erro ao sair:", error);
+        }
+    };
+
+    // 3. NAVEGAÇÃO
+    window.verificarLogin = () => {
+        const user = auth.currentUser;
+        if (user) {
+            window.location.href = 'servicos.html';
+        } else {
+            abrirLogin();
+        }
+    };
+
+    // 4. LÓGICA DO MODAL
+    window.abrirLogin = () => { 
+        document.getElementById('modalLogin').style.display = 'flex'; 
+        const user = auth.currentUser;
+        
+        if (user) {
+            mostrarPerfil(user);
+        } else {
+            mostrarSocial();
+        }
+    };
+    
+    window.fecharLogin = () => { 
+        document.getElementById('modalLogin').style.display = 'none'; 
+    };
+    
+    window.mostrarFormulario = () => { 
+        esconderTudo();
+        document.getElementById('viewEmail').style.display = 'block'; 
+    };
+    
+    window.mostrarSocial = () => { 
+        esconderTudo();
+        document.getElementById('viewSocial').style.display = 'block'; 
+    };
+
+    // 5. FUNÇÃO PRINCIPAL: MOSTRAR PERFIL E BUSCAR DADOS
+    window.mostrarPerfil = (user) => {
+        esconderTudo();
+        document.getElementById('viewLogged').style.display = 'block';
+        
+        // Exibir Nome Completo e Email
+        document.getElementById('nomeUsuarioLogado').innerText = user.displayName || "Cliente";
+        document.getElementById('emailUsuarioLogado').innerText = user.email;
+        
+        if (user.photoURL) {
+            document.getElementById('imgPerfilUsuario').src = user.photoURL;
+        }
+        
+        // CHAMA A BUSCA DE DADOS REAIS
+        buscarAgendamentosReal(user);
+    };
+
+    // 6. FUNÇÃO ATUALIZADA QUE BUSCA NO FIREBASE (FIRESTORE)
+    async function buscarAgendamentosReal(user) {
+        const listaContainer = document.getElementById('containerAgendamentos');
+        const contadorElement = document.getElementById('contadorAgendamentos');
+        const totalElement = document.getElementById('totalAgendamentos');
+        const statusFiltro = document.getElementById('statusFiltro');
+        
+        listaContainer.innerHTML = '<div class="loading-spinner">🔍 Buscando seus agendamentos...</div>';
+        contadorElement.style.display = 'none';
+
+        try {
+            console.log("Buscando agendamentos para UID:", user.uid);
+            
+            // Busca todos os agendamentos do usuário
+            const q = query(
+                collection(db, "agendamentos"), 
+                where("uid", "==", user.uid)
+            );
+
+            const querySnapshot = await getDocs(q);
+            
+            console.log("Encontrados:", querySnapshot.size, "agendamentos");
+            
+            listaContainer.innerHTML = '';
+
+            if (querySnapshot.empty) {
+                listaContainer.innerHTML = `
+                    <div class="sem-agendamentos">
+                        <div class="sem-agendamentos-icon">📅</div>
+                        <strong>Nenhum agendamento encontrado</strong><br>
+                        <small>Agende seu primeiro horário!</small>
+                    </div>
+                `;
+                return;
+            }
+
+            // Converter para array e ordenar por data
+            const agendamentos = [];
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                agendamentos.push({
+                    id: doc.id,
+                    ...data
+                });
+            });
+            
+            // Ordenar por data (mais recente primeiro)
+            agendamentos.sort((a, b) => {
+                // Se tiver dataCriacao, usa ela
+                if (a.dataCriacao && b.dataCriacao) {
+                    return b.dataCriacao.toDate() - a.dataCriacao.toDate();
+                }
+                // Se não, tenta ordenar pela data do agendamento
+                if (a.data && b.data) {
+                    const dataA = converterDataStringParaTimestamp(a.data);
+                    const dataB = converterDataStringParaTimestamp(b.data);
+                    return dataB - dataA;
+                }
+                return 0;
+            });
+
+            // Mostrar contador
+            contadorElement.style.display = 'flex';
+            totalElement.textContent = agendamentos.length;
+            statusFiltro.textContent = agendamentos.length + ' encontrado' + (agendamentos.length !== 1 ? 's' : '');
+
+            // Criar HTML para cada agendamento
+            let agendamentosHTML = '';
+            let delay = 0;
+            
+            agendamentos.forEach((agendamento) => {
+                // Formatar data
+                const dataFormatada = formatarData(agendamento.data);
+                
+                // Formatar hora
+                let horaFormatada = agendamento.hora || "";
+                if (horaFormatada && horaFormatada.includes(':')) {
+                    horaFormatada = horaFormatada.substring(0, 5); // Pega só "HH:MM"
+                }
+                
+                // Determinar status e cor
+                const status = agendamento.status?.toLowerCase() || "confirmado";
+                const statusClass = getStatusClass(status);
+                const statusText = getStatusText(status);
+                
+                // Formatar preço
+                const precoFormatado = agendamento.preco ? `R$ ${parseFloat(agendamento.preco).toFixed(2).replace('.', ',')}` : "";
+                
+                const itemHTML = `
+                    <div class="item-agendamento" style="animation-delay: ${delay}s;">
+                        <div class="info-agenda">
+                            <span class="data-hora">${dataFormatada} ${horaFormatada ? 'às ' + horaFormatada : ''}</span>
+                            <span class="servico-nome">${agendamento.servico || "Serviço"}</span>
+                            ${precoFormatado ? `<span class="preco-agenda">${precoFormatado}</span>` : ''}
+                        </div>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                `;
+                agendamentosHTML += itemHTML;
+                delay += 0.05;
+            });
+
+            listaContainer.innerHTML = agendamentosHTML;
+
+        } catch (error) {
+            console.error("Erro ao buscar agendamentos:", error);
+            
+            let mensagemErro = "Não foi possível carregar seus agendamentos.";
+            
+            if (error.code === 'failed-precondition') {
+                mensagemErro = `
+                    <div style="background:#fff3cd; color:#856404; padding:15px; border-radius:8px; font-size:0.9rem; text-align:left;">
+                        <strong>Configuração necessária no Firebase:</strong><br>
+                        1. Vá ao Firebase Console<br>
+                        2. Firestore Database → Índices<br>
+                        3. Crie índice composto para: uid e dataCriacao<br>
+                        <small>Ou aguarde a primeira consulta automática.</small>
+                    </div>
+                `;
+            } else if (error.message.includes('permission')) {
+                mensagemErro = "Permissão negada. Verifique as regras do Firestore.";
+            }
+            
+            listaContainer.innerHTML = `
+                <div style="color:#721c24; background:#f8d7da; padding:15px; border-radius:8px; text-align:center;">
+                    <strong>Erro ao carregar</strong><br>
+                    <small>${mensagemErro}</small>
+                    <br><br>
+                    <button onclick="buscarAgendamentosReal(auth.currentUser)" 
+                            style="background: var(--cor-principal); color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer;">
+                        Tentar novamente
+                    </button>
+                </div>
+            `;
+        }
+    }
+
+    // FUNÇÕES AUXILIARES
+    function converterDataStringParaTimestamp(dataString) {
+        if (!dataString || !dataString.includes('/')) return 0;
+        
+        try {
+            const [dia, mes, ano] = dataString.split('/').map(Number);
+            return new Date(ano, mes - 1, dia).getTime();
+        } catch (e) {
+            return 0;
+        }
+    }
+
+    function formatarData(dataString) {
+        if (!dataString) return "Data não definida";
+        
+        try {
+            if (dataString.includes('/')) {
+                const [dia, mes, ano] = dataString.split('/');
+                const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", 
+                              "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+                return `${dia} ${meses[parseInt(mes)-1]} ${ano}`;
+            }
+            
+            // Se for timestamp
+            if (dataString.toDate) {
+                const data = dataString.toDate();
+                return data.toLocaleDateString('pt-BR', { 
+                    day: '2-digit', 
+                    month: 'short', 
+                    year: 'numeric' 
+                });
+            }
+            
+            return dataString;
+        } catch (e) {
+            return dataString;
+        }
+    }
+
+    function getStatusClass(status) {
+        switch(status) {
+            case 'confirmado': return 'status-confirmado';
+            case 'pendente': return 'status-pendente';
+            case 'cancelado': return 'status-cancelado';
+            case 'realizado': return 'status-realizado';
+            default: return 'status-confirmado';
+        }
+    }
+
+    function getStatusText(status) {
+        switch(status) {
+            case 'confirmado': return 'Confirmado';
+            case 'pendente': return 'Pendente';
+            case 'cancelado': return 'Cancelado';
+            case 'realizado': return 'Realizado';
+            default: return 'Confirmado';
+        }
+    }
+
+    function esconderTudo() {
+        document.getElementById('viewEmail').style.display = 'none'; 
+        document.getElementById('viewSocial').style.display = 'none'; 
+        document.getElementById('viewLogged').style.display = 'none'; 
+    }
+    
+    window.toggleSenha = () => {
+        const input = document.getElementById('senhaInput');
+        if (input.type === "password") input.type = "text";
+        else input.type = "password";
+    };
+
+    // 7. MONITORAR ESTADO (Muda o botão "Entrar" na Home)
+    onAuthStateChanged(auth, (user) => {
+        const btnHome = document.getElementById('btnEntrar');
+        
+        if (user) {
+            // USUÁRIO LOGADO - MOSTRA NOME COMPLETO (Verde)
+            btnHome.innerHTML = `
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                   <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+                </svg>
+                ${user.displayName || 'Cliente'}
+            `;
+            btnHome.classList.add('logado');
+        } else {
+            // USUÁRIO DESLOGADO - PADRÃO
+            btnHome.innerHTML = `
+                <svg viewBox="0 0 24 24">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                    <polyline points="10 17 15 12 10 7"></polyline>
+                    <line x1="15" y1="12" x2="3" y2="12"></line>
+                </svg>
+                Entrar
+            `;
+            btnHome.classList.remove('logado');
+            btnHome.style.color = 'var(--cor-principal)';
+        }
+    });
+
+    // Adicionar estilo para o spinner
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    `;
+    document.head.appendChild(style);
+</script>
+
+</body>
+</html>

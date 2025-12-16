@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Agendar Data | Nayara Brisola</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- ESTILO BASE (MANTIDO) --- */
+        :root {
+            --cor-fundo: #f0f8ff; 
+            --cor-principal: #006080; 
+            --cor-clara: #4cc9f0; 
+            --cor-texto: #2c3e50; 
+            --branco: #ffffff;
+            --cinza-inativo: #e0e0e0;
+            --cor-sucesso: #2ecc71;
+            --cor-erro: #e74c3c;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(180deg, var(--cor-fundo) 0%, #ffffff 100%);
+            color: var(--cor-texto);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100dvh;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            overflow-x: hidden;
+        }
+
+        /* --- ANIMAÇÕES --- */
+        @keyframes surgirSuave { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0.5); } 70% { transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes pulsarBrilho { 0% { box-shadow: 0 0 0 0 rgba(0, 96, 128, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(0, 96, 128, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 96, 128, 0); } }
+
+        /* --- CABEÇALHO --- */
+        header {
+            background-color: var(--branco); width: 100%; padding: 15px 20px 25px;
+            display: flex; flex-direction: column; align-items: center;
+            border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
+            box-shadow: 0 4px 25px rgba(0, 96, 128, 0.05); margin-bottom: 20px;
+            position: relative; z-index: 10; animation: surgirSuave 0.8s ease-out;
+        }
+
+        .btn-voltar-header {
+            align-self: flex-start; display: flex; align-items: center; gap: 8px; 
+            background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px);
+            border: 1px solid rgba(0, 96, 128, 0.15); color: var(--cor-principal);
+            padding: 8px 18px; border-radius: 30px; text-decoration: none;
+            font-size: 0.8rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, background-color 0.2s; margin-bottom: 5px; 
+        }
+        .btn-voltar-header svg { width: 16px; height: 16px; fill: none; stroke: var(--cor-principal); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+        .btn-voltar-header:active { transform: scale(0.95); background-color: #f0f8ff; }
+
+        .nome-header {
+            font-family: 'Dancing Script', cursive; color: var(--cor-clara); 
+            font-size: 2.2rem; margin: 0; line-height: 1.1; margin-top: 5px;
+            cursor: pointer; transition: transform 0.3s; display: inline-block;
+        }
+        .nome-header:active { transform: scale(1.15); color: var(--cor-principal); }
+
+        .resumo-servico {
+            background: linear-gradient(90deg, #e0f7fa, #ffffff); padding: 6px 16px;
+            border-radius: 20px; display: inline-block; margin-top: 8px;
+            font-size: 0.8rem; color: var(--cor-principal); font-weight: 600;
+            border: 1px solid #b2ebf2; animation: popIn 0.5s ease-out 0.3s backwards;
+        }
+
+        .container { width: 90%; max-width: 400px; padding-bottom: 40px; }
+
+        /* --- CALENDÁRIO --- */
+        .calendario-box {
+            background: var(--branco); border-radius: 20px; padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 96, 128, 0.08); margin-bottom: 25px;
+            animation: surgirSuave 1s ease-out 0.2s backwards;
+        }
+        .calendario-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .mes-titulo { font-weight: 700; color: var(--cor-principal); font-size: 1.1rem; text-transform: capitalize; }
+        .btn-mes { background: none; border: none; color: var(--cor-clara); font-size: 1.5rem; cursor: pointer; padding: 0 10px; transition: transform 0.2s; }
+        .btn-mes:active { transform: scale(0.8); }
+
+        .dias-semana { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.75rem; color: #888; margin-bottom: 10px; font-weight: 600; }
+        .grid-dias { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+
+        .dia {
+            aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; position: relative;
+        }
+        .dia:not(.inativo):not(.vazio):hover { background-color: #e0f7fa; color: var(--cor-principal); }
+        .dia.selecionado { background-color: var(--cor-principal); color: white; box-shadow: 0 4px 10px rgba(0, 96, 128, 0.3); transform: scale(1.1); }
+        .dia.hoje { color: var(--cor-clara); font-weight: bold; border: 2px solid var(--cor-clara); }
+        .dia.inativo { color: var(--cinza-inativo); cursor: not-allowed; }
+
+        /* --- HORÁRIOS --- */
+        .area-horarios {
+            display: none; background: var(--branco); border-radius: 20px; padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 96, 128, 0.08); text-align: center; animation: surgirSuave 0.5s ease-out;
+        }
+        .titulo-secao { font-size: 0.9rem; color: var(--cor-texto); margin-bottom: 15px; font-weight: 600; }
+        .grid-horas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        
+        .btn-hora {
+            padding: 10px 5px; border: 1px solid var(--cor-clara); background: white;
+            color: var(--cor-principal); border-radius: 10px; font-size: 0.85rem; cursor: pointer;
+            transition: all 0.2s; opacity: 0; animation: popIn 0.4s ease-out forwards;
+        }
+        .btn-hora.selecionado {
+            background: var(--cor-clara); color: white; border-color: var(--cor-clara);
+            font-weight: bold; box-shadow: 0 4px 10px rgba(76, 201, 240, 0.3); transform: scale(1.05);
+        }
+
+        /* --- FORMULÁRIO --- */
+        .area-confirmacao { display: none; margin-top: 25px; text-align: center; animation: surgirSuave 0.5s ease-out; }
+        input {
+            width: 100%; padding: 15px; margin-bottom: 15px; border: 1px solid #ddd;
+            border-radius: 15px; font-size: 1rem; font-family: 'Montserrat', sans-serif;
+            box-sizing: border-box; outline: none; background-color: #fcfcfc; transition: border 0.3s, box-shadow 0.3s;
+        }
+        input:focus { border-color: var(--cor-clara); background-color: white; box-shadow: 0 0 0 4px rgba(76, 201, 240, 0.1); }
+
+        .btn-confirmar {
+            width: 100%; padding: 16px; background: linear-gradient(90deg, var(--cor-principal) 0%, #008fb3 100%);
+            color: white; border: none; border-radius: 50px; font-size: 1rem; font-weight: bold;
+            text-transform: uppercase; cursor: pointer; box-shadow: 0 5px 15px rgba(0, 96, 128, 0.2);
+            animation: pulsarBrilho 2s infinite; transition: transform 0.2s;
+        }
+        .btn-confirmar:active { transform: scale(0.95); }
+
+        .loader {
+            display: none; width: 40px; height: 40px; margin: 20px auto;
+            border: 4px solid #f3f3f3; border-top: 4px solid var(--cor-clara);
+            border-radius: 50%; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .mensagem {
+            padding: 15px; border-radius: 15px; margin: 10px 0; text-align: center;
+            font-weight: 600; display: none; animation: popIn 0.3s ease-out;
+        }
+        .mensagem.sucesso { background-color: rgba(46, 204, 113, 0.1); color: var(--cor-sucesso); border: 1px solid var(--cor-sucesso); }
+        .mensagem.erro { background-color: rgba(231, 76, 60, 0.1); color: var(--cor-erro); border: 1px solid var(--cor-erro); }
+
+        .status-conexao { position: fixed; top: 10px; right: 10px; width: 12px; height: 12px; border-radius: 50%; z-index: 1000; }
+        .status-conexao.online { background-color: var(--cor-sucesso); box-shadow: 0 0 10px var(--cor-sucesso); }
+        .status-conexao.offline { background-color: var(--cor-erro); box-shadow: 0 0 10px var(--cor-erro); }
+
+        footer { margin-top: auto; padding: 20px; text-align: center; font-size: 0.75rem; color: #8899a6; width: 100%; opacity: 0; animation: surgirSuave 1s ease-out 1s forwards; }
+    </style>
+</head>
+<body>
+
+    <div id="statusConexao" class="status-conexao offline"></div>
+
+    <header>
+        <a href="servicos.html" class="btn-voltar-header">
+            <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
+            <span>Voltar</span>
+        </a>
+        <h1 class="nome-header">Nayara Brisola</h1>
+        <div id="resumoServico" class="resumo-servico">Carregando...</div>
+    </header>
+
+    <div class="container">
+        <div class="calendario-box">
+            <div class="calendario-header">
+                <button class="btn-mes" onclick="mudarMes(-1)">❮</button>
+                <span class="mes-titulo" id="mesAno">Dezembro 2025</span>
+                <button class="btn-mes" onclick="mudarMes(1)">❯</button>
+            </div>
+            <div class="dias-semana"><div>D</div><div>S</div><div>T</div><div>Q</div><div>Q</div><div>S</div><div>S</div></div>
+            <div class="grid-dias" id="diasCalendario"></div>
+        </div>
+
+        <div id="areaHorarios" class="area-horarios">
+            <div class="titulo-secao">Horários Disponíveis para <span id="dataSelecionadaTexto"></span></div>
+            <div class="loader" id="loaderHorarios"></div>
+            <div class="grid-horas" id="listaHoras"></div>
+        </div>
+
+        <div id="mensagem" class="mensagem"></div>
+
+        <div id="areaConfirmacao" class="area-confirmacao">
+            <input type="text" id="nomeCliente" placeholder="Seu Nome Completo" required>
+            <input type="tel" id="telCliente" placeholder="Seu WhatsApp (com DDD)" required>
+            <div class="loader" id="loaderConfirmacao"></div>
+            <button class="btn-confirmar" onclick="finalizarAgendamento()">Confirmar Agendamento</button>
+        </div>
+    </div>
+    
+    <footer>&copy; 2025 Nayara Brisola</footer>
+
+   <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        // ADICIONADO: Importamos 'getAuth' para saber quem é o utilizador
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // 🔥 CONFIGURAÇÃO
+        const firebaseConfig = {
+            apiKey: "AIzaSyCLkHAL6V4xwfuLJbRYhnZcIAWRo6D2c1M",
+            authDomain: "agendanayara-e900b.firebaseapp.com",
+            projectId: "agendanayara-e900b",
+            storageBucket: "agendanayara-e900b.firebasestorage.app",
+            messagingSenderId: "306081027760",
+            appId: "1:306081027760:web:0cbdac4448e2672069cd75"
+        };
+
+        const NUMERO_WHATSAPP_NAYARA = "5515997665402"; 
+        
+        // VARIÁVEIS GLOBAIS
+        let app, db, auth; // ADICIONADO: auth
+        let dataAtual = new Date(); 
+        let anoAtual = dataAtual.getFullYear();
+        let mesAtual = dataAtual.getMonth();
+        let diaSelecionado = null;
+        let horaSelecionada = null;
+        let dadosServico = {};
+
+        // INICIALIZAR
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app); // ADICIONADO: Inicializar auth
+            console.log("✅ Firebase conectado!");
+            document.getElementById('statusConexao').className = 'status-conexao online';
+        } catch (error) {
+            console.error("Erro Firebase:", error);
+            mostrarMensagem("Erro de conexão.", "erro");
+        }
+
+        // CARREGAR DADOS AO INICIAR
+        window.onload = function() {
+            const dadosSalvos = localStorage.getItem('servicoSelecionado');
+            if (dadosSalvos) {
+                dadosServico = JSON.parse(dadosSalvos);
+                document.getElementById('resumoServico').innerText = `✨ ${dadosServico.servico} (${dadosServico.duracao}h)`;
+            } else {
+                window.location.href = 'servicos.html';
+            }
+            renderizarCalendario(mesAtual, anoAtual);
+        };
+
+        const nomeMeses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+
+        window.mudarMes = function(direcao) {
+            mesAtual += direcao;
+            if (mesAtual < 0) { mesAtual = 11; anoAtual--; } 
+            else if (mesAtual > 11) { mesAtual = 0; anoAtual++; }
+            renderizarCalendario(mesAtual, anoAtual);
+        }
+
+        function renderizarCalendario(mes, ano) {
+            const primeiroDia = new Date(ano, mes, 1).getDay();
+            const diasNoMes = new Date(ano, mes + 1, 0).getDate();
+            document.getElementById('mesAno').innerText = `${nomeMeses[mes]} ${ano}`;
+            
+            let htmlDias = "";
+            for (let i = 0; i < primeiroDia; i++) { htmlDias += `<div class="dia vazio"></div>`; }
+            
+            for (let dia = 1; dia <= diasNoMes; dia++) {
+                const dataLoop = new Date(ano, mes, dia);
+                const diaSemana = dataLoop.getDay();
+                let classeExtra = "";
+                let podeClicar = true;
+
+                if (diaSemana === 0) { classeExtra = "inativo"; podeClicar = false; } // Domingo
+                
+                const hoje = new Date();
+                hoje.setHours(0,0,0,0);
+                if (dataLoop < hoje) { classeExtra = "inativo"; podeClicar = false; }
+                if (dataLoop.getTime() === hoje.getTime()) classeExtra += " hoje";
+
+                if (podeClicar) htmlDias += `<div class="dia ${classeExtra}" onclick="selecionarDia(this, ${dia})">${dia}</div>`;
+                else htmlDias += `<div class="dia ${classeExtra}">${dia}</div>`;
+            }
+            document.getElementById('diasCalendario').innerHTML = htmlDias;
+        }
+
+        window.selecionarDia = async function(elemento, dia) {
+            document.querySelectorAll('.dia').forEach(d => d.classList.remove('selecionado'));
+            elemento.classList.add('selecionado');
+
+            const diaFormatado = String(dia).padStart(2, '0');
+            const mesFormatado = String(mesAtual + 1).padStart(2, '0');
+            diaSelecionado = `${diaFormatado}/${mesFormatado}/${anoAtual}`;
+            
+            document.getElementById('dataSelecionadaTexto').innerText = diaSelecionado;
+
+            const areaHorarios = document.getElementById('areaHorarios');
+            areaHorarios.style.display = 'block';
+            document.getElementById('areaConfirmacao').style.display = 'none';
+            
+            areaHorarios.style.animation = 'none';
+            areaHorarios.offsetHeight; 
+            areaHorarios.style.animation = 'surgirSuave 0.5s ease-out';
+            
+            await gerarHorarios();
+            areaHorarios.scrollIntoView({behavior: "smooth"});
+        }
+
+        async function gerarHorarios() {
+            const containerHoras = document.getElementById('listaHoras');
+            const loader = document.getElementById('loaderHorarios');
+            
+            containerHoras.innerHTML = "";
+            loader.style.display = 'block';
+
+            try {
+                let configDia = { inicio: 9, fim: 18 }; 
+                const docId = diaSelecionado.replace(/\//g, '-');
+                const configRef = doc(db, "configuracoes_dias", docId);
+                const configSnap = await getDoc(configRef);
+
+                if (configSnap.exists()) {
+                    const dadosConfig = configSnap.data();
+                    configDia.inicio = dadosConfig.inicio;
+                    configDia.fim = dadosConfig.fim;
+                }
+
+                const duracaoServico = dadosServico.duracao || 1;
+                let ocupados = new Set();
+                
+                const q = query(collection(db, "agendamentos"), where("data", "==", diaSelecionado));
+                const snapshot = await getDocs(q);
+                
+                snapshot.forEach(doc => {
+                    const item = doc.data();
+                    let horaInicio = parseInt(item.hora.split(':')[0]);
+                    let duracaoItem = item.duracao || 1;
+                    for(let i = 0; i < duracaoItem; i++) ocupados.add(horaInicio + i);
+                });
+
+                let horariosGerados = 0;
+                for (let h = configDia.inicio; h < configDia.fim; h++) {
+                    if (h + duracaoServico <= configDia.fim) {
+                        let horarioLivre = true;
+                        for(let i = 0; i < duracaoServico; i++) {
+                            if (ocupados.has(h + i)) { horarioLivre = false; break; }
+                        }
+
+                        if (horarioLivre) {
+                            let horaFormatada = h.toString().padStart(2, '0') + ":00";
+                            let botao = document.createElement('div');
+                            botao.className = 'btn-hora';
+                            botao.innerText = horaFormatada;
+                            botao.onclick = function() { selecionarHora(this, horaFormatada); };
+                            containerHoras.appendChild(botao);
+                            horariosGerados++;
+                        }
+                    }
+                }
+                
+                if (horariosGerados === 0) containerHoras.innerHTML = "<p style='color:#999; width:100%; grid-column: 1/-1;'>Agenda cheia.</p>";
+                
+            } catch (error) {
+                console.error("Erro agenda:", error);
+                containerHoras.innerHTML = "<p style='color:#e74c3c; width:100%; grid-column: 1/-1;'>Erro ao carregar agenda.</p>";
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+
+        window.selecionarHora = function(elemento, hora) {
+            document.querySelectorAll('.btn-hora').forEach(b => b.classList.remove('selecionado'));
+            elemento.classList.add('selecionado');
+            horaSelecionada = hora;
+            const areaConfirmacao = document.getElementById('areaConfirmacao');
+            areaConfirmacao.style.display = 'block';
+            areaConfirmacao.scrollIntoView({behavior: "smooth"});
+        }
+
+        // --- FUNÇÃO CORRIGIDA ---
+        window.finalizarAgendamento = async function() {
+            const nome = document.getElementById('nomeCliente').value.trim();
+            const tel = document.getElementById('telCliente').value.trim();
+            const loader = document.getElementById('loaderConfirmacao');
+            const btnConfirmar = document.querySelector('.btn-confirmar');
+        
+            if (!nome || !tel) {
+                mostrarMensagem("Preencha todos os campos.", "erro");
+                return;
+            }
+
+            // CORREÇÃO: Verificar utilizador logado
+            const user = auth.currentUser;
+            if (!user) {
+                mostrarMensagem("Você precisa estar logado!", "erro");
+                // Opcional: Redirecionar para login
+                setTimeout(() => window.location.href = 'index.html', 2000);
+                return;
+            }
+        
+            btnConfirmar.style.display = 'none';
+            loader.style.display = 'block';
+        
+            try {
+                const novoAgendamento = {
+                    uid: user.uid, // <--- O CAMPO QUE FALTAVA (Liga o agendamento ao utilizador)
+                    email: user.email, // Útil para contato se necessário
+                    cliente: nome,
+                    contato: tel,
+                    servico: dadosServico.servico,
+                    preco: dadosServico.valor,
+                    duracao: dadosServico.duracao,
+                    data: diaSelecionado,
+                    hora: horaSelecionada,
+                    criadoEm: serverTimestamp(),
+                    status: 'pendente' // Bom definir um status inicial
+                };
+        
+                await addDoc(collection(db, "agendamentos"), novoAgendamento);
+                alert("Agendamento confirmado com sucesso!");
+                
+                // Redireciona para o index, onde agora deve aparecer na lista
+                window.location.href = 'index.html';
+        
+            } catch (error) {
+                console.error("Erro salvar:", error);
+                mostrarMensagem("Erro ao agendar. Tente novamente.", "erro");
+                btnConfirmar.style.display = 'block';
+                loader.style.display = 'none';
+            }
+        };
+
+        function mostrarMensagem(texto, tipo) {
+            const msgDiv = document.getElementById('mensagem');
+            msgDiv.innerText = texto;
+            msgDiv.className = `mensagem ${tipo}`;
+            msgDiv.style.display = 'block';
+            setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>
