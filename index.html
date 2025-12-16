@@ -605,8 +605,8 @@
 
    <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, onAuthStateChanged, signOut, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     // SUA CONFIGURAÇÃO
     const firebaseConfig = {
@@ -624,19 +624,50 @@
     const provider = new GoogleAuthProvider();
     auth.languageCode = 'pt';
 
-    // 1. LOGIN GOOGLE
+    // --- VERIFICAÇÃO INICIAL (Recupera login após redirect) ---
+    // Se o utilizador voltar do Google, isto vai apanhar o login
+    getRedirectResult(auth)
+        .then((result) => {
+            if (result) {
+                console.log("Login via redirecionamento recuperado com sucesso!");
+                // O onAuthStateChanged vai tratar de exibir o perfil
+            }
+        })
+        .catch((error) => {
+            console.error("Erro no retorno do login:", error);
+            // Ignora erro de popup fechado, alerta outros
+            if (error.code !== 'auth/popup-closed-by-user') {
+                // alert("Aviso: " + error.message); // Opcional: descomentar para debug
+            }
+        });
+
+    // 1. LOGIN GOOGLE (ESTRATÉGIA: POPUP PRIMEIRO)
     window.fazerLoginGoogle = async () => {
         const btnGoogle = document.querySelector('.btn-google');
         const textoOriginal = btnGoogle.innerHTML;
-        btnGoogle.innerHTML = '<div style="width:20px;height:20px;border:2px solid #fff;border-radius:50%;border-top-color:transparent;animation:spin 1s linear infinite;margin-right:8px;"></div> Aguarde...';
+        
+        // Feedback visual imediato
+        btnGoogle.innerHTML = '<div style="width:20px;height:20px;border:2px solid #fff;border-radius:50%;border-top-color:transparent;animation:spin 1s linear infinite;margin-right:8px;"></div> A conectar...';
         
         try {
+            // TENTA POPUP PRIMEIRO (Funciona melhor na maioria dos casos agora)
             await signInWithPopup(auth, provider);
-            fecharLogin();
+            // Se der certo, fecha o modal (o onAuthStateChanged faz o resto)
+            fecharLogin(); 
+            
         } catch (error) {
-            console.error("Erro:", error);
-            alert("Erro ao logar com Google.");
-            btnGoogle.innerHTML = textoOriginal;
+            console.log("Popup falhou, tentando redirecionamento...", error);
+            
+            // SE O POPUP FALHAR (Bloqueador ou erro), TENTA REDIRECT
+            try {
+                // Aviso antes de redirecionar para o usuário não estranhar
+                btnGoogle.innerHTML = "Redirecionando...";
+                await signInWithRedirect(auth, provider);
+            } catch (err2) {
+                console.error("Erro fatal no login:", err2);
+                alert("Não foi possível conectar. Tente abrir o site no navegador Chrome.");
+                btnGoogle.innerHTML = textoOriginal;
+            }
         }
     };
 
@@ -645,7 +676,7 @@
         try {
             await signOut(auth);
             alert("Desconectado com sucesso.");
-            fecharLogin();
+            window.location.reload();
         } catch (error) {
             console.error("Erro ao sair:", error);
         }
@@ -665,46 +696,24 @@
     window.abrirLogin = () => { 
         document.getElementById('modalLogin').style.display = 'flex'; 
         const user = auth.currentUser;
-        
-        if (user) {
-            mostrarPerfil(user);
-        } else {
-            mostrarSocial();
-        }
+        if (user) { mostrarPerfil(user); } else { mostrarSocial(); }
     };
     
-    window.fecharLogin = () => { 
-        document.getElementById('modalLogin').style.display = 'none'; 
-    };
-    
-    window.mostrarFormulario = () => { 
-        esconderTudo();
-        document.getElementById('viewEmail').style.display = 'block'; 
-    };
-    
-    window.mostrarSocial = () => { 
-        esconderTudo();
-        document.getElementById('viewSocial').style.display = 'block'; 
-    };
+    window.fecharLogin = () => { document.getElementById('modalLogin').style.display = 'none'; };
+    window.mostrarFormulario = () => { esconderTudo(); document.getElementById('viewEmail').style.display = 'block'; };
+    window.mostrarSocial = () => { esconderTudo(); document.getElementById('viewSocial').style.display = 'block'; };
 
-    // 5. FUNÇÃO PRINCIPAL: MOSTRAR PERFIL E BUSCAR DADOS
+    // 5. MOSTRAR PERFIL
     window.mostrarPerfil = (user) => {
         esconderTudo();
         document.getElementById('viewLogged').style.display = 'block';
-        
-        // Exibir Nome Completo e Email
         document.getElementById('nomeUsuarioLogado').innerText = user.displayName || "Cliente";
         document.getElementById('emailUsuarioLogado').innerText = user.email;
-        
-        if (user.photoURL) {
-            document.getElementById('imgPerfilUsuario').src = user.photoURL;
-        }
-        
-        // CHAMA A BUSCA DE DADOS REAIS
+        if (user.photoURL) document.getElementById('imgPerfilUsuario').src = user.photoURL;
         buscarAgendamentosReal(user);
     };
 
-    // 6. FUNÇÃO ATUALIZADA QUE BUSCA NO FIREBASE (FIRESTORE)
+    // 6. BUSCAR AGENDAMENTOS
     async function buscarAgendamentosReal(user) {
         const listaContainer = document.getElementById('containerAgendamentos');
         const contadorElement = document.getElementById('contadorAgendamentos');
@@ -715,238 +724,102 @@
         contadorElement.style.display = 'none';
 
         try {
-            console.log("Buscando agendamentos para UID:", user.uid);
-            
-            // Busca todos os agendamentos do usuário
-            const q = query(
-                collection(db, "agendamentos"), 
-                where("uid", "==", user.uid)
-            );
-
+            const q = query(collection(db, "agendamentos"), where("uid", "==", user.uid));
             const querySnapshot = await getDocs(q);
-            
-            console.log("Encontrados:", querySnapshot.size, "agendamentos");
             
             listaContainer.innerHTML = '';
 
             if (querySnapshot.empty) {
-                listaContainer.innerHTML = `
-                    <div class="sem-agendamentos">
-                        <div class="sem-agendamentos-icon">📅</div>
-                        <strong>Nenhum agendamento encontrado</strong><br>
-                        <small>Agende seu primeiro horário!</small>
-                    </div>
-                `;
+                listaContainer.innerHTML = `<div class="sem-agendamentos"><div class="sem-agendamentos-icon">📅</div><strong>Nenhum agendamento encontrado</strong><br><small>Agende seu primeiro horário!</small></div>`;
                 return;
             }
 
-            // Converter para array e ordenar por data
             const agendamentos = [];
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                agendamentos.push({
-                    id: doc.id,
-                    ...data
-                });
-            });
+            querySnapshot.forEach((doc) => agendamentos.push({ id: doc.id, ...doc.data() }));
             
-            // Ordenar por data (mais recente primeiro)
             agendamentos.sort((a, b) => {
-                // Se tiver dataCriacao, usa ela
-                if (a.dataCriacao && b.dataCriacao) {
-                    return b.dataCriacao.toDate() - a.dataCriacao.toDate();
-                }
-                // Se não, tenta ordenar pela data do agendamento
-                if (a.data && b.data) {
-                    const dataA = converterDataStringParaTimestamp(a.data);
-                    const dataB = converterDataStringParaTimestamp(b.data);
-                    return dataB - dataA;
-                }
+                if (a.dataCriacao && b.dataCriacao) return b.dataCriacao.toDate() - a.dataCriacao.toDate();
+                if (a.data && b.data) return converterDataStringParaTimestamp(b.data) - converterDataStringParaTimestamp(a.data);
                 return 0;
             });
 
-            // Mostrar contador
             contadorElement.style.display = 'flex';
             totalElement.textContent = agendamentos.length;
             statusFiltro.textContent = agendamentos.length + ' encontrado' + (agendamentos.length !== 1 ? 's' : '');
 
-            // Criar HTML para cada agendamento
             let agendamentosHTML = '';
             let delay = 0;
             
             agendamentos.forEach((agendamento) => {
-                // Formatar data
                 const dataFormatada = formatarData(agendamento.data);
-                
-                // Formatar hora
                 let horaFormatada = agendamento.hora || "";
-                if (horaFormatada && horaFormatada.includes(':')) {
-                    horaFormatada = horaFormatada.substring(0, 5); // Pega só "HH:MM"
-                }
-                
-                // Determinar status e cor
+                if (horaFormatada.includes(':')) horaFormatada = horaFormatada.substring(0, 5);
                 const status = agendamento.status?.toLowerCase() || "confirmado";
-                const statusClass = getStatusClass(status);
-                const statusText = getStatusText(status);
-                
-                // Formatar preço
                 const precoFormatado = agendamento.preco ? `R$ ${parseFloat(agendamento.preco).toFixed(2).replace('.', ',')}` : "";
                 
-                const itemHTML = `
+                agendamentosHTML += `
                     <div class="item-agendamento" style="animation-delay: ${delay}s;">
                         <div class="info-agenda">
                             <span class="data-hora">${dataFormatada} ${horaFormatada ? 'às ' + horaFormatada : ''}</span>
                             <span class="servico-nome">${agendamento.servico || "Serviço"}</span>
                             ${precoFormatado ? `<span class="preco-agenda">${precoFormatado}</span>` : ''}
                         </div>
-                        <span class="status-badge ${statusClass}">${statusText}</span>
-                    </div>
-                `;
-                agendamentosHTML += itemHTML;
+                        <span class="status-badge ${getStatusClass(status)}">${getStatusText(status)}</span>
+                    </div>`;
                 delay += 0.05;
             });
-
             listaContainer.innerHTML = agendamentosHTML;
-
         } catch (error) {
-            console.error("Erro ao buscar agendamentos:", error);
-            
-            let mensagemErro = "Não foi possível carregar seus agendamentos.";
-            
-            if (error.code === 'failed-precondition') {
-                mensagemErro = `
-                    <div style="background:#fff3cd; color:#856404; padding:15px; border-radius:8px; font-size:0.9rem; text-align:left;">
-                        <strong>Configuração necessária no Firebase:</strong><br>
-                        1. Vá ao Firebase Console<br>
-                        2. Firestore Database → Índices<br>
-                        3. Crie índice composto para: uid e dataCriacao<br>
-                        <small>Ou aguarde a primeira consulta automática.</small>
-                    </div>
-                `;
-            } else if (error.message.includes('permission')) {
-                mensagemErro = "Permissão negada. Verifique as regras do Firestore.";
-            }
-            
-            listaContainer.innerHTML = `
-                <div style="color:#721c24; background:#f8d7da; padding:15px; border-radius:8px; text-align:center;">
-                    <strong>Erro ao carregar</strong><br>
-                    <small>${mensagemErro}</small>
-                    <br><br>
-                    <button onclick="buscarAgendamentosReal(auth.currentUser)" 
-                            style="background: var(--cor-principal); color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer;">
-                        Tentar novamente
-                    </button>
-                </div>
-            `;
+            console.error(error);
+            listaContainer.innerHTML = `<div style="color:#721c24; background:#f8d7da; padding:15px; border-radius:8px;">Erro ao carregar.</div>`;
         }
     }
 
     // FUNÇÕES AUXILIARES
     function converterDataStringParaTimestamp(dataString) {
         if (!dataString || !dataString.includes('/')) return 0;
-        
-        try {
-            const [dia, mes, ano] = dataString.split('/').map(Number);
-            return new Date(ano, mes - 1, dia).getTime();
-        } catch (e) {
-            return 0;
-        }
+        try { const [d, m, a] = dataString.split('/').map(Number); return new Date(a, m - 1, d).getTime(); } catch (e) { return 0; }
     }
-
     function formatarData(dataString) {
-        if (!dataString) return "Data não definida";
-        
-        try {
-            if (dataString.includes('/')) {
-                const [dia, mes, ano] = dataString.split('/');
-                const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", 
-                              "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-                return `${dia} ${meses[parseInt(mes)-1]} ${ano}`;
-            }
-            
-            // Se for timestamp
-            if (dataString.toDate) {
-                const data = dataString.toDate();
-                return data.toLocaleDateString('pt-BR', { 
-                    day: '2-digit', 
-                    month: 'short', 
-                    year: 'numeric' 
-                });
-            }
-            
-            return dataString;
-        } catch (e) {
-            return dataString;
+        if (!dataString) return "";
+        if (dataString.includes('/')) {
+            const [d, m, a] = dataString.split('/');
+            const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+            return `${d} ${meses[parseInt(m)-1]} ${a}`;
         }
+        return dataString;
     }
+    function getStatusClass(s) { const c = { 'confirmado': 'status-confirmado', 'pendente': 'status-pendente', 'cancelado': 'status-cancelado', 'realizado': 'status-realizado' }; return c[s] || 'status-confirmado'; }
+    function getStatusText(s) { const t = { 'confirmado': 'Confirmado', 'pendente': 'Pendente', 'cancelado': 'Cancelado', 'realizado': 'Realizado' }; return t[s] || 'Confirmado'; }
+    function esconderTudo() { document.getElementById('viewEmail').style.display = 'none'; document.getElementById('viewSocial').style.display = 'none'; document.getElementById('viewLogged').style.display = 'none'; }
+    window.toggleSenha = () => { const i = document.getElementById('senhaInput'); i.type = i.type === "password" ? "text" : "password"; };
 
-    function getStatusClass(status) {
-        switch(status) {
-            case 'confirmado': return 'status-confirmado';
-            case 'pendente': return 'status-pendente';
-            case 'cancelado': return 'status-cancelado';
-            case 'realizado': return 'status-realizado';
-            default: return 'status-confirmado';
-        }
-    }
-
-    function getStatusText(status) {
-        switch(status) {
-            case 'confirmado': return 'Confirmado';
-            case 'pendente': return 'Pendente';
-            case 'cancelado': return 'Cancelado';
-            case 'realizado': return 'Realizado';
-            default: return 'Confirmado';
-        }
-    }
-
-    function esconderTudo() {
-        document.getElementById('viewEmail').style.display = 'none'; 
-        document.getElementById('viewSocial').style.display = 'none'; 
-        document.getElementById('viewLogged').style.display = 'none'; 
-    }
-    
-    window.toggleSenha = () => {
-        const input = document.getElementById('senhaInput');
-        if (input.type === "password") input.type = "text";
-        else input.type = "password";
-    };
-
-    // 7. MONITORAR ESTADO (Muda o botão "Entrar" na Home)
+    // 7. MONITORAR ESTADO
+    // Esta é a parte mais importante. Ela roda automaticamente assim que o Firebase percebe que estás logado.
     onAuthStateChanged(auth, (user) => {
         const btnHome = document.getElementById('btnEntrar');
-        
         if (user) {
-            // USUÁRIO LOGADO - MOSTRA NOME COMPLETO (Verde)
-            btnHome.innerHTML = `
-                <svg viewBox="0 0 24 24" width="24" height="24">
-                   <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-                </svg>
-                ${user.displayName || 'Cliente'}
-            `;
+            // Se logou, atualiza botão e mostra perfil
+            btnHome.innerHTML = `<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg> ${user.displayName || 'Cliente'}`;
             btnHome.classList.add('logado');
+            
+            // Se o modal estiver aberto, atualiza para a vista logada
+            if(document.getElementById('modalLogin').style.display === 'flex') {
+                mostrarPerfil(user);
+            }
         } else {
-            // USUÁRIO DESLOGADO - PADRÃO
-            btnHome.innerHTML = `
-                <svg viewBox="0 0 24 24">
-                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                    <polyline points="10 17 15 12 10 7"></polyline>
-                    <line x1="15" y1="12" x2="3" y2="12"></line>
-                </svg>
-                Entrar
-            `;
+            // Se deslogou
+            btnHome.innerHTML = `<svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg> Entrar`;
             btnHome.classList.remove('logado');
             btnHome.style.color = 'var(--cor-principal)';
         }
     });
 
-    // Adicionar estilo para o spinner
     const style = document.createElement('style');
-    style.textContent = `
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    `;
+    style.textContent = `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`;
     document.head.appendChild(style);
 </script>
 
 </body>
+
 </html>
