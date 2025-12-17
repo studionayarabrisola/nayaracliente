@@ -15,7 +15,10 @@
             --cor-clara: #4cc9f0; 
             --cor-texto: #2c3e50; 
             --branco: #ffffff;
-            --cor-sucesso: #009e60; 
+            --cor-sucesso: #009e60; /* Verde */
+            --cor-pendente: #ff9800; /* Laranja */
+            --cor-cancelado: #f44336; /* Vermelho */
+            --cor-realizado: #4caf50; /* Verde claro */
         }
 
         body {
@@ -40,6 +43,7 @@
         @keyframes pulsarBrilho { 0%, 100% { box-shadow: 0 0 0 0 rgba(76, 201, 240, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(76, 201, 240, 0); } }
         @keyframes popModal { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes slideInRight { from { transform: translateX(50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeInItem { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* --- CONTAINER PRINCIPAL --- */
         .container {
@@ -236,33 +240,79 @@
             font-size: 1rem; font-weight: bold; cursor: pointer;
         }
 
-        /* TELA LOGADO */
+        /* --- TELA LOGADO (NOVO LAYOUT) --- */
         #viewLogged { animation: slideInRight 0.3s ease-out; }
+        
         .perfil-foto-area {
             width: 80px; height: 80px;
             border-radius: 50%;
             margin: 0 auto 10px auto;
             background-color: #eee;
             overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
         .perfil-foto-area img { width: 100%; height: 100%; object-fit: cover; }
         
+        .subtitulo-email {
+            font-size: 0.85rem; color: #888; margin-bottom: 20px;
+        }
+
+        /* LISTA DE AGENDAMENTOS ESTILIZADA */
         .lista-agendamentos {
-            text-align: left; max-height: 300px; overflow-y: auto;
-            margin-bottom: 25px; padding-right: 5px;
+            text-align: left;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 25px;
+            padding-right: 5px;
         }
+        /* Scrollbar */
+        .lista-agendamentos::-webkit-scrollbar { width: 6px; }
+        .lista-agendamentos::-webkit-scrollbar-thumb { background-color: #ddd; border-radius: 3px; }
+
         .item-agendamento {
-            background: #f9f9f9; border-left: 4px solid var(--cor-clara);
-            padding: 12px; margin-bottom: 10px; border-radius: 8px; font-size: 0.9rem;
-            display: flex; justify-content: space-between; align-items: center;
+            background: #f9f9f9;
+            border-left: 4px solid var(--cor-clara);
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            animation: fadeInItem 0.3s ease-out;
         }
+        
+        .info-agenda { display: flex; flex-direction: column; gap: 4px; }
+        .data-hora { font-weight: bold; color: var(--cor-principal); font-size: 0.95rem; }
+        .servico-nome { color: #555; font-size: 0.85rem; }
+        .preco-agenda { color: var(--cor-sucesso); font-weight: bold; font-size: 0.85rem; }
+
+        /* BAGDES DE STATUS */
+        .status-badge {
+            font-size: 0.7rem; padding: 4px 10px; border-radius: 12px;
+            font-weight: bold; white-space: nowrap; margin-left: 10px;
+        }
+        .status-confirmado { background: #d4edda; color: #155724; }
+        .status-pendente { background: #fff3cd; color: #856404; }
+        .status-cancelado { background: #f8d7da; color: #721c24; }
+        .status-realizado { background: #d1ecf1; color: #0c5460; }
+
         .btn-sair {
             background-color: #ffebee; color: #d32f2f; border: none;
             padding: 12px 30px; border-radius: 25px; font-weight: bold;
             cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
         }
+        .btn-sair:hover { background-color: #ffcdd2; }
 
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .sem-agendamentos { text-align: center; padding: 20px; color: #888; font-size: 0.9rem; }
+
+        @media (max-width: 480px) {
+            .container { width: 88%; padding: 30px 20px; }
+            .moldura-foto { width: 140px; height: 140px; }
+            h1 { font-size: 2.5rem; }
+            .modal-login { max-width: 90%; padding: 20px; }
+        }
     </style>
 </head>
 <body>
@@ -326,20 +376,30 @@
                 <div class="perfil-foto-area">
                     <img id="imgPerfilUsuario" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Perfil">
                 </div>
-                <div class="titulo-login" id="nomeUsuarioLogado">Carregando...</div>
+                <div class="titulo-login" id="nomeUsuarioLogado" style="margin-bottom: 5px;">Carregando...</div>
+                <div class="subtitulo-email" id="emailUsuarioLogado">...</div>
                 
-                <h3 style="color:#006080; font-size:1rem; margin-bottom:15px; border-bottom:1px solid #eee;">
-                    Seus Agendamentos
+                <h3 style="color:#006080; font-size:1rem; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px; text-align: left;">
+                    📅 Seus Agendamentos
                 </h3>
-                <div class="lista-agendamentos" id="containerAgendamentos"></div>
-                <button class="btn-sair" onclick="fazerLogout()">Sair da Conta</button>
+                <div class="lista-agendamentos" id="containerAgendamentos">
+                    <div style="color:#888;">Carregando...</div>
+                </div>
+                
+                <button class="btn-sair" onclick="fazerLogout()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Sair da Conta
+                </button>
             </div>
         </div>
     </div>
 
     <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    // Removemos 'signInWithRedirect' e 'getRedirectResult' para não causar confusão
     import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -358,13 +418,9 @@
     const provider = new GoogleAuthProvider();
     auth.languageCode = 'pt';
 
-    console.log("🔥 Firebase inicializado (Modo Popup Universal)");
-
-    // --- LOGIN SIMPLIFICADO (POPUP PARA TODOS) ---
+    // --- LOGIN SIMPLIFICADO (POPUP) ---
     window.fazerLoginGoogle = async () => {
         const btnGoogle = document.querySelector('.btn-google');
-        
-        // Feedback visual
         if (btnGoogle) {
             btnGoogle.innerHTML = 'Abrindo Google...';
             btnGoogle.disabled = true;
@@ -372,51 +428,26 @@
         }
 
         try {
-            console.log("🚀 Iniciando login via Popup...");
-            
-            // Força o uso de POPUP mesmo no celular
-            // Isso evita o erro de "falha silenciosa" no retorno do redirect
             const result = await signInWithPopup(auth, provider);
-            
-            // Se chegou aqui, funcionou!
             console.log("✅ Sucesso:", result.user.displayName);
-            alert("Login realizado com sucesso!"); // Feedback claro pro usuário
-            
             fecharLogin();
             mostrarPerfil(result.user);
 
         } catch (error) {
             console.error("❌ Erro no Login:", error);
-
-            // Restaura o botão
             if (btnGoogle) {
-                btnGoogle.innerHTML = `
-                    <svg width="20" height="20" viewBox="0 0 48 48" style="vertical-align:middle;margin-right:5px">
-                        <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path>
-                        <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path>
-                        <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path>
-                        <path fill="#1976D2" d="M43.611,20.083L43.611,20.083C43.862,21.35,44,22.659,44,24c0,5.61-2.066,10.875-5.591,14.808l-6.19-5.238C33.21,32.571,34.025,31.309,34.591,29.897C35.842,26.791,36,23.473,34.996,20.083H43.611z"></path>
-                    </svg>
-                    Tentar Novamente
-                `;
+                btnGoogle.innerHTML = `Tentar Novamente`;
                 btnGoogle.disabled = false;
                 btnGoogle.style.opacity = '1';
             }
-
-            // Tratamento de erros comuns
             if (error.code === 'auth/popup-blocked') {
-                alert("⚠️ O SEU NAVEGADOR BLOQUEOU A JANELA!\n\nPor favor, clique em 'Permitir Pop-ups' se aparecer um aviso, ou tente abrir o site no Chrome.");
-            } else if (error.code === 'auth/popup-closed-by-user') {
-                console.log("Janela fechada pelo usuário");
-            } else if (error.code === 'auth/unauthorized-domain') {
-                alert("⚠️ Erro de Domínio: O link do GitHub ainda não propagou no Firebase. Aguarde alguns minutos.");
+                alert("⚠️ O SEU NAVEGADOR BLOQUEOU A JANELA!\n\nPor favor, permita pop-ups ou tente outro navegador.");
             } else {
                 alert("Erro ao entrar: " + error.message);
             }
         }
     };
 
-    // --- LOGOUT ---
     window.fazerLogout = async () => {
         if (!confirm("Deseja sair da conta?")) return;
         try { await signOut(auth); window.location.reload(); } 
@@ -448,7 +479,7 @@
         document.getElementById('viewEmail').style.display = 'block'; 
     };
 
-    // --- PERFIL DO USUÁRIO ---
+    // --- PERFIL E LISTA (LÓGICA DA VERSÃO COMPLETA) ---
     window.mostrarPerfil = (user) => {
         document.getElementById('viewSocial').style.display = 'none';
         document.getElementById('viewLogged').style.display = 'block';
@@ -460,62 +491,100 @@
         buscarAgendamentosReal(user);
     };
 
+    async function buscarAgendamentosReal(user) {
+        const lista = document.getElementById('containerAgendamentos');
+        if(!lista) return;
+        lista.innerHTML = '<div style="color:#888; text-align:center; padding:20px;">🔍 Buscando seus agendamentos...</div>';
+        
+        try {
+            const q = query(collection(db, "agendamentos"), where("uid", "==", user.uid));
+            const snap = await getDocs(q);
+            
+            lista.innerHTML = '';
+            
+            if (snap.empty) {
+                lista.innerHTML = '<div class="sem-agendamentos">Você ainda não tem agendamentos.</div>';
+                return;
+            }
+
+            const agendamentos = [];
+            snap.forEach((doc) => agendamentos.push({ id: doc.id, ...doc.data() }));
+
+            // Ordenar por data (Função auxiliar interna)
+            agendamentos.sort((a, b) => {
+                const dateA = a.dataCriacao ? a.dataCriacao.toDate() : converterDataStringParaTimestamp(a.data);
+                const dateB = b.dataCriacao ? b.dataCriacao.toDate() : converterDataStringParaTimestamp(b.data);
+                return dateB - dateA; // Mais recente primeiro
+            });
+
+            agendamentos.forEach(item => {
+                const dataF = formatarData(item.data);
+                const horaF = item.hora ? item.hora.substring(0, 5) : '';
+                const precoF = item.preco ? `R$ ${parseFloat(item.preco).toFixed(2).replace('.', ',')}` : '';
+                const status = item.status ? item.status.toLowerCase() : 'confirmado';
+
+                lista.innerHTML += `
+                    <div class="item-agendamento">
+                        <div class="info-agenda">
+                            <span class="data-hora">${dataF} ${horaF ? 'às '+horaF : ''}</span>
+                            <span class="servico-nome">${item.servico}</span>
+                            ${precoF ? `<span class="preco-agenda">${precoF}</span>` : ''}
+                        </div>
+                        <span class="status-badge ${getStatusClass(status)}">${getStatusText(status)}</span>
+                    </div>`;
+            });
+        } catch (e) {
+            console.error(e);
+            lista.innerHTML = '<div style="color:red; text-align:center;">Erro ao buscar dados.</div>';
+        }
+    }
+
+    // --- FUNÇÕES AUXILIARES VISUAIS (DA VERSÃO COMPLETA) ---
+    function formatarData(dataString) {
+        if (!dataString) return "";
+        if (dataString.includes('/')) {
+            const [d, m, a] = dataString.split('/');
+            const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+            return `${d} ${meses[parseInt(m)-1]} ${a}`;
+        }
+        return dataString;
+    }
+
+    function converterDataStringParaTimestamp(dataString) {
+        if (!dataString || !dataString.includes('/')) return 0;
+        try { const [d, m, a] = dataString.split('/').map(Number); return new Date(a, m - 1, d).getTime(); } catch (e) { return 0; }
+    }
+    
+    function getStatusClass(s) { 
+        const c = { 'confirmado': 'status-confirmado', 'pendente': 'status-pendente', 'cancelado': 'status-cancelado', 'realizado': 'status-realizado' }; 
+        return c[s] || 'status-confirmado'; 
+    }
+    
+    function getStatusText(s) { 
+        const t = { 'confirmado': 'Confirmado', 'pendente': 'Pendente', 'cancelado': 'Cancelado', 'realizado': 'Realizado' }; 
+        return t[s] || 'Confirmado'; 
+    }
+
     // --- MONITOR DE ESTADO ---
     onAuthStateChanged(auth, (user) => {
         const btnHome = document.getElementById('btnEntrar');
         if (user) {
-            console.log("👤 Logado:", user.email);
             if(btnHome) {
-                btnHome.innerHTML = `<span style="color:#009e60">Olá, ${user.displayName ? user.displayName.split(' ')[0] : 'Cliente'}</span>`;
+                btnHome.innerHTML = `<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg> ${user.displayName ? user.displayName.split(' ')[0] : 'Conta'}`;
                 btnHome.classList.add('logado');
             }
-            // Se o modal estiver aberto na tela de login, muda pro perfil
+            // Atualiza modal se aberto
             const modal = document.getElementById('modalLogin');
             if(modal && modal.style.display === 'flex' && document.getElementById('viewSocial').style.display === 'block') {
                 mostrarPerfil(user);
             }
         } else {
-            console.log("👤 Deslogado");
             if(btnHome) {
-                btnHome.innerHTML = `Entrar`;
+                btnHome.innerHTML = `<svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg> Entrar`;
                 btnHome.classList.remove('logado');
             }
         }
     });
-
-    // --- BUSCA DE AGENDAMENTOS (Mantida a lógica original) ---
-    async function buscarAgendamentosReal(user) {
-        const lista = document.getElementById('containerAgendamentos');
-        if(!lista) return;
-        lista.innerHTML = '<div class="loading-spinner">Buscando...</div>';
-        
-        try {
-            const q = query(collection(db, "agendamentos"), where("uid", "==", user.uid));
-            const snap = await getDocs(q);
-            lista.innerHTML = '';
-            
-            if (snap.empty) {
-                lista.innerHTML = '<div class="sem-agendamentos">Sem agendamentos.</div>';
-                return;
-            }
-
-            snap.forEach(doc => {
-                const d = doc.data();
-                lista.innerHTML += `
-                    <div class="item-agendamento">
-                        <div>
-                            <strong>${d.data}</strong> - ${d.hora || ''}<br>
-                            <small>${d.servico}</small>
-                        </div>
-                        <span class="status-badge status-confirmado">Confirmado</span>
-                    </div>`;
-            });
-        } catch (e) {
-            console.error(e);
-            lista.innerHTML = 'Erro ao buscar dados.';
-        }
-    }
-</script>
+    </script>
 </body>
 </html>
-
