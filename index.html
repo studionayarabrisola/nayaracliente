@@ -630,56 +630,54 @@
     };
 
     // --- TRATAR RETORNO DO REDIRECT (CRÍTICO PARA MOBILE) ---
+   // --- TRATAR RETORNO DO REDIRECT (CORRIGIDO PARA MOBILE) ---
     window.addEventListener('load', () => {
-        // Verifica se a URL tem parâmetros de autenticação do Google
-        const urlParams = new URLSearchParams(window.location.search);
-        const hasAuthParams = urlParams.has('state') || urlParams.has('apiKey') || 
-                              urlParams.has('authType') || urlParams.has('code');
+        // Verifica se estavamos num processo de login (a flag que criaste antes)
+        const loginEmAndamento = sessionStorage.getItem('googleLoginInProgress');
         
-        if (hasAuthParams) {
-            console.log("📱 Detectado retorno de autenticação Google (mobile redirect)");
+        // Se houver a flag OU se houver parametros de auth na URL (dupla verificação)
+        // Chamamos o getRedirectResult de qualquer forma. Se não houver resultado, ele apenas retorna null.
+        if (loginEmAndamento === 'true') {
             
-            // Processa o resultado do redirect
+            console.log("📱 Detectado retorno de login via Redirect (Mobile/Tablet)");
+            
+            // Feedback visual enquanto processa
+            const btnGoogle = document.querySelector('.btn-google');
+            if(btnGoogle) {
+                btnGoogle.innerHTML = 'Validando login...';
+                btnGoogle.disabled = true;
+            }
+
             getRedirectResult(auth)
                 .then((result) => {
+                    // Limpa a flag para não tentar processar novamente num refresh normal
+                    sessionStorage.removeItem('googleLoginInProgress');
+
                     if (result) {
-                        console.log("✅ Login via redirect processado com sucesso!");
+                        console.log("✅ Login confirmado via Redirect!");
                         const user = result.user;
                         
-                        // Limpa parâmetros da URL sem recarregar
-                        window.history.replaceState({}, document.title, window.location.pathname);
-                        
-                        // Fecha modal se estiver aberto
+                        // Fecha o modal e atualiza a interface
                         fecharLogin();
-                        
-                        // Atualiza interface
-                        if (window.mostrarPerfil) {
-                            mostrarPerfil(user);
-                        }
-                        
-                        // Feedback visual
-                        setTimeout(() => {
-                            if (document.getElementById('modalLogin').style.display !== 'flex') {
-                                const btnHome = document.getElementById('btnEntrar');
-                                if (btnHome) {
-                                    btnHome.innerHTML = `<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg> ${user.displayName || 'Cliente'}`;
-                                    btnHome.classList.add('logado');
-                                }
-                            }
-                        }, 500);
+                        if (window.mostrarPerfil) mostrarPerfil(user);
+                    } else {
+                        console.log("ℹ️ Nenhum resultado de redirecionamento capturado (pode já estar logado).");
                     }
                 })
                 .catch((error) => {
+                    sessionStorage.removeItem('googleLoginInProgress');
                     console.error("❌ Erro ao processar redirect:", error);
                     
-                    // Limpa URL mesmo com erro
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                    
-                    // Mostra erro amigável
-                    if (error.code && !error.code.includes('cancelled')) {
-                        setTimeout(() => {
-                            alert("Erro ao conectar: " + (error.message || "Tente novamente"));
-                        }, 300);
+                    if(btnGoogle) {
+                        btnGoogle.innerHTML = 'Tentar novamente';
+                        btnGoogle.disabled = false;
+                    }
+
+                    // Tratamento específico para erro comum de domínio não autorizado
+                    if (error.code === 'auth/unauthorized-domain') {
+                        alert("Erro: Este domínio (GitHub Pages) não está autorizado no Firebase Console.");
+                    } else {
+                        alert("Falha no login: " + error.message);
                     }
                 });
         }
@@ -1070,5 +1068,6 @@
 </body>
 
 </html>
+
 
 
