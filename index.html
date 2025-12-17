@@ -15,10 +15,7 @@
             --cor-clara: #4cc9f0; 
             --cor-texto: #2c3e50; 
             --branco: #ffffff;
-            --cor-sucesso: #009e60; /* Verde da imagem */
-            --cor-pendente: #ff9800;
-            --cor-cancelado: #f44336;
-            --cor-realizado: #4caf50;
+            --cor-sucesso: #009e60; 
         }
 
         body {
@@ -41,10 +38,8 @@
         @keyframes surgirSuave { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes respirarLuz { 0%, 100% { box-shadow: 0 0 0 0 rgba(76, 201, 240, 0.4); } 50% { box-shadow: 0 0 25px 5px rgba(76, 201, 240, 0.2); } }
         @keyframes pulsarBrilho { 0%, 100% { box-shadow: 0 0 0 0 rgba(76, 201, 240, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(76, 201, 240, 0); } }
-        @keyframes fadeOverlay { from { opacity: 0; } to { opacity: 1; } }
         @keyframes popModal { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes slideInRight { from { transform: translateX(50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes fadeInItem { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* --- CONTAINER PRINCIPAL --- */
         .container {
@@ -69,7 +64,7 @@
             background: transparent;
             border: none;
             color: var(--cor-principal); 
-            font-size: 0.95rem; /* Ajuste leve para caber nomes maiores */
+            font-size: 0.95rem;
             font-weight: 700;
             cursor: pointer;
             display: flex;
@@ -83,18 +78,13 @@
             width: 24px;
             height: 24px;
             fill: none;
-            stroke: currentColor; /* Pega a cor do texto */
+            stroke: currentColor;
             stroke-width: 2.5;
             stroke-linecap: round;
             stroke-linejoin: round;
-            transition: stroke 0.3s;
         }
 
-        /* Estado Logado (Verde) */
-        .btn-login-interno.logado {
-            color: var(--cor-sucesso);
-        }
-
+        .btn-login-interno.logado { color: var(--cor-sucesso); }
         .btn-login-interno:hover { transform: translateX(2px); opacity: 0.8; }
 
         /* --- FOTO PERFIL --- */
@@ -106,7 +96,6 @@
             overflow: hidden;
             animation: respirarLuz 3s infinite ease-in-out;
             cursor: pointer;
-            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             position: relative;
             z-index: 1;
             display: flex;
@@ -122,7 +111,6 @@
             border-radius: 50%; 
             border: 4px solid white; 
         }
-        .moldura-foto:active { transform: scale(0.95); filter: brightness(0.9); }
 
         /* --- TEXTOS --- */
         h1 {
@@ -131,11 +119,8 @@
             font-size: 3rem;
             margin-bottom: 0px;
             line-height: 1.2;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
             cursor: pointer;
-            transition: transform 0.2s ease;
         }
-        h1:active { transform: scale(1.05); }
 
         h2 {
             font-family: 'Montserrat', sans-serif;
@@ -173,7 +158,7 @@
 
         footer { margin-top: 30px; font-size: 0.75rem; color: #8899a6; padding-bottom: 20px; }
 
-        /* --- MODAL (CONFIGURAÇÕES) --- */
+        /* --- MODAL --- */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -183,19 +168,18 @@
             z-index: 1000;
             justify-content: center;
             align-items: center;
-            animation: fadeOverlay 0.3s;
+            animation: popModal 0.4s;
         }
 
         .modal-login {
             background: white;
             width: 90%;
-            max-width: 400px; /* Aumentado para caber melhor os agendamentos */
+            max-width: 400px;
             padding: 30px;
             border-radius: 25px;
             text-align: center;
             box-shadow: 0 20px 50px rgba(0,0,0,0.3);
             position: relative;
-            animation: popModal 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             overflow: hidden; 
         }
 
@@ -209,10 +193,9 @@
             border: none;
             z-index: 20;
         }
-        .btn-fechar:hover { color: #666; }
 
-        /* TELA 1: SOCIAL */
-        .view-section { width: 100%; }
+        /* TELA LOGIN */
+        .view-section { width: 100%; display: none; }
         
         .icone-login { font-size: 40px; color: var(--cor-principal); margin-bottom: 10px; }
         .titulo-login { font-size: 1.4rem; color: var(--cor-principal); font-weight: bold; margin-bottom: 20px; }
@@ -232,278 +215,79 @@
         }
         .btn-social:active { transform: scale(0.98); }
         .btn-google img { width: 20px; }
-        
         .btn-email { background-color: var(--cor-principal); color: white; border: none; }
-        .btn-email:hover { background-color: #004d66; }
 
-        /* TELA 2: FORMULÁRIO */
-        #viewEmail { display: none; animation: slideInRight 0.3s ease-out; }
-
+        /* TELA FORMULÁRIO (EMAIL) */
+        #viewEmail { animation: slideInRight 0.3s ease-out; }
         .btn-voltar-modal {
             position: absolute; top: 20px; left: 20px;
             background: none; border: 1px solid #eee; border-radius: 20px;
             color: var(--cor-principal); padding: 5px 15px; font-size: 0.8rem;
-            cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 5px;
+            cursor: pointer; font-weight: 600;
         }
-        .btn-voltar-modal:hover { background-color: #f9f9f9; }
-
-        .marca-login {
-            font-family: 'Dancing Script', cursive;
-            color: var(--cor-clara);
-            font-size: 2.2rem;
-            margin-top: 30px;
-            margin-bottom: 5px;
-            line-height: 1.1;
-        }
-        
-        .subtitulo-login { font-size: 0.9rem; color: #888; margin-bottom: 30px; }
-
-        /* Inputs */
-        .input-group { position: relative; margin-bottom: 20px; text-align: left; }
-        .input-group label { font-size: 0.75rem; color: #888; margin-left: 15px; margin-bottom: 5px; display: block; font-weight: 600; }
-        .input-wrapper { position: relative; }
-
-        .input-icon {
-            position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
-            display: flex; align-items: center;
-        }
-        .input-icon svg { width: 20px; height: 20px; stroke: #aaa; fill: none; stroke-width: 1.5; transition: stroke 0.3s; }
-
         .input-custom {
-            width: 100%; padding: 14px 45px;
+            width: 100%; padding: 14px 20px; margin-bottom: 15px;
             border: 1px solid #ddd; border-radius: 25px;
-            font-size: 0.95rem; color: #333; outline: none; box-sizing: border-box;
-            background-color: #fcfcfc; transition: border-color 0.3s;
+            font-size: 0.95rem; box-sizing: border-box; background-color: #fcfcfc;
         }
-        .input-custom:focus { border-color: var(--cor-principal); background-color: white; }
-        
-        .toggle-senha {
-            position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
-            cursor: pointer; display: flex; align-items: center;
-        }
-        .toggle-senha svg { width: 20px; height: 20px; stroke: #aaa; fill: none; stroke-width: 1.5; }
-        .toggle-senha:hover svg { stroke: var(--cor-principal); }
-
         .btn-entrar-form {
             width: 100%; padding: 14px; background-color: var(--cor-principal);
             color: white; border: none; border-radius: 25px;
-            font-size: 1rem; font-weight: bold; margin-top: 10px; cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0, 96, 128, 0.2);
-        }
-        .btn-entrar-form:active { transform: scale(0.98); }
-
-        .footer-login-links {
-            margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            font-size: 1rem; font-weight: bold; cursor: pointer;
         }
 
-        .link-simples {
-            font-size: 0.85rem;
-            color: #777; 
-            text-decoration: none; 
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-        .link-simples:hover { color: var(--cor-principal); }
-        .link-simples strong { color: var(--cor-principal); font-weight: 700; }
-
-        /* --- TELA 3: PERFIL LOGADO (NOVA) --- */
-        #viewLogged { display: none; animation: slideInRight 0.3s ease-out; }
-        
-        .perfil-header {
-            margin-bottom: 20px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 15px;
-        }
+        /* TELA LOGADO */
+        #viewLogged { animation: slideInRight 0.3s ease-out; }
         .perfil-foto-area {
             width: 80px; height: 80px;
             border-radius: 50%;
             margin: 0 auto 10px auto;
             background-color: #eee;
             overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
         .perfil-foto-area img { width: 100%; height: 100%; object-fit: cover; }
-
+        
         .lista-agendamentos {
-            text-align: left;
-            max-height: 300px; /* Aumentado para mostrar mais agendamentos */
-            overflow-y: auto;
-            margin-bottom: 25px;
-            padding-right: 5px;
+            text-align: left; max-height: 300px; overflow-y: auto;
+            margin-bottom: 25px; padding-right: 5px;
         }
-        /* Spinner de carregamento dentro da lista */
-        .loading-spinner {
-            text-align: center;
-            color: #888;
-            padding: 20px;
-            font-size: 0.9rem;
-        }
-
-        /* Scrollbar fina para a lista */
-        .lista-agendamentos::-webkit-scrollbar { width: 6px; }
-        .lista-agendamentos::-webkit-scrollbar-thumb { background-color: #ddd; border-radius: 3px; }
-
         .item-agendamento {
-            background: #f9f9f9;
-            border-left: 4px solid var(--cor-clara);
-            padding: 12px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            animation: fadeInItem 0.3s ease-out;
-            transition: transform 0.2s;
+            background: #f9f9f9; border-left: 4px solid var(--cor-clara);
+            padding: 12px; margin-bottom: 10px; border-radius: 8px; font-size: 0.9rem;
+            display: flex; justify-content: space-between; align-items: center;
         }
-        
-        .item-agendamento:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        
-        .info-agenda { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 4px;
-            flex: 1;
-        }
-        .data-hora { 
-            font-weight: bold; 
-            color: var(--cor-principal);
-            font-size: 0.95rem;
-        }
-        .servico-nome { 
-            color: #555; 
-            font-size: 0.85rem;
-        }
-        .preco-agenda {
-            color: var(--cor-sucesso);
-            font-weight: bold;
-            font-size: 0.85rem;
-            margin-top: 2px;
-        }
-        
-        .status-badge {
-            font-size: 0.7rem; 
-            padding: 4px 10px; 
-            border-radius: 12px;
-            font-weight: bold;
-            white-space: nowrap;
-            margin-left: 10px;
-        }
-
-        .status-confirmado {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .status-pendente {
-            background: #fff3cd;
-            color: #856404;
-        }
-        
-        .status-cancelado {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        .status-realizado {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-
         .btn-sair {
-            background-color: #ffebee;
-            color: #d32f2f;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            transition: 0.3s;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
-        .btn-sair:hover { background-color: #ffcdd2; }
-
-        /* Contador de agendamentos */
-        .contador-agendamentos {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding: 10px 15px;
-            background: linear-gradient(90deg, #f0f8ff, #e0f7fa);
-            border-radius: 10px;
-            font-size: 0.9rem;
-        }
-        
-        .contador-numero {
-            background: var(--cor-principal);
-            color: white;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-weight: bold;
+            background-color: #ffebee; color: #d32f2f; border: none;
+            padding: 12px 30px; border-radius: 25px; font-weight: bold;
+            cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
         }
 
-        /* Mensagem quando não há agendamentos */
-        .sem-agendamentos {
-            text-align: center;
-            padding: 40px 20px;
-            color: #666;
-        }
-        
-        .sem-agendamentos-icon {
-            font-size: 3rem;
-            margin-bottom: 10px;
-            opacity: 0.5;
-        }
-
-        @media (max-width: 480px) {
-            .container { width: 88%; padding: 30px 20px; margin-top: 30px; }
-            .moldura-foto { width: 140px; height: 140px; }
-            h1 { font-size: 2.5rem; }
-            .btn-login-interno { top: 20px; left: 20px; }
-            .modal-login { max-width: 90%; padding: 20px; }
-            .lista-agendamentos { max-height: 250px; }
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
     <div class="container">
         <button id="btnEntrar" class="btn-login-interno" onclick="abrirLogin()">
-            <svg viewBox="0 0 24 24">
-                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                <polyline points="10 17 15 12 10 7"></polyline>
-                <line x1="15" y1="12" x2="3" y2="12"></line>
-            </svg>
+            <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
             Entrar
         </button>
         
-        <div class="moldura-foto" onclick="">
-            <img src="petista.jpg" alt="Logo Nayara Brisola">
+        <div class="moldura-foto">
+            <img src="petista.jpg" alt="Logo">
         </div>
 
-        <h1 onclick="">Nayara Brisola</h1>
+        <h1>Nayara Brisola</h1>
         <h2>Lashe Designer</h2>
 
         <div class="descricao">
             <p>Realce o seu olhar com técnicas exclusivas de <strong>Volume Brasileiro</strong> e <strong>Design de Sobrancelhas</strong>.</p>
-            <p>Conforto e beleza natural.</p>
         </div>
 
         <a href="#" onclick="verificarLogin()" class="btn-inicio">Agendar Horário</a>
     </div>
 
-    <footer>
-        &copy; 2025 Nayara Brisola
-    </footer>
+    <footer>&copy; 2025 Nayara Brisola</footer>
 
     <div id="modalLogin" class="modal-overlay">
         <div class="modal-login">
@@ -512,10 +296,9 @@
             <div id="viewSocial" class="view-section">
                 <div class="icone-login">🔐</div>
                 <div class="titulo-login">Área do Cliente</div>
-
                 <div class="aviso-box">
-                    <strong>Importante:</strong><br>
-                    É necessário fazer login para realizar o agendamento.
+                    <strong>Atenção:</strong><br>
+                    Faça login para agendar.
                 </div>
 
                 <button class="btn-social btn-google" onclick="fazerLoginGoogle()">
@@ -525,483 +308,194 @@
                         <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path>
                         <path fill="#1976D2" d="M43.611,20.083L43.611,20.083C43.862,21.35,44,22.659,44,24c0,5.61-2.066,10.875-5.591,14.808l-6.19-5.238C33.21,32.571,34.025,31.309,34.591,29.897C35.842,26.791,36,23.473,34.996,20.083H43.611z"></path>
                     </svg>
-                    Continuar com Google
+                    Entrar com Google
                 </button>
 
-                <button class="btn-social btn-email" onclick="mostrarFormulario()">
-                     Continuar com Email
-                </button>
+                <button class="btn-social btn-email" onclick="mostrarFormulario()">Continuar com Email</button>
             </div>
 
             <div id="viewEmail" class="view-section">
                 <button class="btn-voltar-modal" onclick="mostrarSocial()">← Voltar</button>
                 <div class="marca-login">Nayara Brisola</div>
-                <div class="subtitulo-login">Use sua conta para logar</div>
-                
-                <div class="input-group">
-                    <label>Email *</label>
-                    <div class="input-wrapper">
-                        <div class="input-icon">
-                            <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                        </div>
-                        <input type="email" id="emailInput" class="input-custom" placeholder="exemplo@gmail.com">
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <label>Senha *</label>
-                    <div class="input-wrapper">
-                        <div class="input-icon">
-                            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                        </div>
-                        <input type="password" id="senhaInput" class="input-custom" placeholder="••••••••">
-                        <span class="toggle-senha" onclick="toggleSenha()">
-                            <svg id="iconeOlho" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                        </span>
-                    </div>
-                </div>
-
-                <button class="btn-entrar-form" onclick="alert('Use o Google para entrar mais rápido!')">Entrar</button>
-
-                <div class="footer-login-links">
-                    <a href="#" class="link-simples">Esqueceu sua senha?</a>
-                    <a href="#" class="link-simples"><strong>Crie sua conta</strong></a>
-                </div>
+                <input type="email" id="emailInput" class="input-custom" placeholder="exemplo@gmail.com">
+                <input type="password" id="senhaInput" class="input-custom" placeholder="••••••••">
+                <button class="btn-entrar-form" onclick="alert('Use o Google!')">Entrar</button>
             </div>
 
             <div id="viewLogged" class="view-section">
-                <div class="perfil-header">
-                    <div class="perfil-foto-area">
-                        <img id="imgPerfilUsuario" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Perfil">
-                    </div>
-                    <div class="titulo-login" id="nomeUsuarioLogado" style="margin-bottom:5px;">Carregando...</div>
-                    <div class="subtitulo-login" id="emailUsuarioLogado" style="margin-bottom:15px; font-size:0.8rem;">...</div>
+                <div class="perfil-foto-area">
+                    <img id="imgPerfilUsuario" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Perfil">
                 </div>
-
-                <h3 style="color:var(--cor-principal); font-size:1rem; margin-bottom:15px; text-align:left; border-bottom:1px solid #eee; padding-bottom:5px;">
-                    📅 Seus Agendamentos
+                <div class="titulo-login" id="nomeUsuarioLogado">Carregando...</div>
+                
+                <h3 style="color:#006080; font-size:1rem; margin-bottom:15px; border-bottom:1px solid #eee;">
+                    Seus Agendamentos
                 </h3>
-
-                <div class="contador-agendamentos" id="contadorAgendamentos" style="display: none;">
-                    <span>Total: <span class="contador-numero" id="totalAgendamentos">0</span></span>
-                    <span id="statusFiltro" style="color:#666; font-size:0.8rem;"></span>
-                </div>
-
-                <div class="lista-agendamentos" id="containerAgendamentos">
-                    <div class="loading-spinner">🔍 Buscando seus agendamentos...</div>
-                </div>
-
-                <button class="btn-sair" onclick="fazerLogout()">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                        <polyline points="16 17 21 12 16 7"></polyline>
-                        <line x1="21" y1="12" x2="9" y2="12"></line>
-                    </svg>
-                    Sair da Conta
-                </button>
+                <div class="lista-agendamentos" id="containerAgendamentos"></div>
+                <button class="btn-sair" onclick="fazerLogout()">Sair da Conta</button>
             </div>
         </div>
     </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, onAuthStateChanged, signOut, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        // Importamos AMBOS: Redirect (para mobile) e Popup (para PC)
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // SUA CONFIGURAÇÃO
-    const firebaseConfig = {
-        apiKey: "AIzaSyCLkHAL6V4xwfuLJbRYhnZcIAWRo6D2c1M",
-        authDomain: "agendanayara-e900b.firebaseapp.com",
-        projectId: "agendanayara-e900b",
-        storageBucket: "agendanayara-e900b.firebasestorage.app",
-        messagingSenderId: "306081027760",
-        appId: "1:306081027760:web:0cbdac4448e2672069cd75"
-    };
+        const firebaseConfig = {
+            apiKey: "AIzaSyCLkHAL6V4xwfuLJbRYhnZcIAWRo6D2c1M",
+            authDomain: "agendanayara-e900b.firebaseapp.com",
+            projectId: "agendanayara-e900b",
+            storageBucket: "agendanayara-e900b.firebasestorage.app",
+            messagingSenderId: "306081027760",
+            appId: "1:306081027760:web:0cbdac4448e2672069cd75"
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const provider = new GoogleAuthProvider();
-    auth.languageCode = 'pt';
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+        auth.languageCode = 'pt';
 
-    // --- DETECTAR SE É MOBILE ---
-    const isMobileDevice = () => {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    };
+        const isMobileDevice = () => {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        };
 
-    // --- TRATAR RETORNO DO REDIRECT (CRÍTICO PARA MOBILE) ---
-   // --- TRATAR RETORNO DO REDIRECT (CORRIGIDO PARA MOBILE) ---
-   // --- TRATAMENTO DE LOGIN (VERSÃO FINAL PARA GITHUB) ---
-    window.addEventListener('load', async () => {
-        // Pequeno delay para garantir que o Firebase carregou no mobile
-        await new Promise(resolve => setTimeout(resolve, 500));
+        console.log("🔥 Firebase ON. Modo Mobile:", isMobileDevice());
 
-        try {
-            // Pergunta ao Firebase: "Veio alguém do Google?"
-            const result = await getRedirectResult(auth);
-
-            if (result) {
-                // CENÁRIO 1: LOGIN BEM-SUCEDIDO
-                console.log("✅ Login Mobile confirmado:", result.user.displayName);
-                
-                // Atualiza a tela
-                fecharLogin();
-                mostrarPerfil(result.user);
-                
-                // Opcional: Mostra um feedback rápido
-                // alert("Bem-vindo(a), " + result.user.displayName + "!"); 
-            } else {
-                // CENÁRIO 2: NENHUM LOGIN PENDENTE
-                // Isso é normal quando o usuário abre o site pela primeira vez
-                console.log("ℹ️ Nenhum retorno de login detectado.");
-            }
-
-        } catch (error) {
-            // CENÁRIO 3: ERRO
-            console.error("❌ Erro no Login:", error);
-
-            if (error.code === 'auth/unauthorized-domain') {
-                alert("⚠️ Erro de Configuração:\nO domínio do GitHub não está autorizado no Firebase Console.");
-            } else if (error.code !== 'auth/popup-closed-by-user') {
-                // Mostra erro apenas se não foi o usuário que fechou
-                alert("Falha ao entrar: " + error.message);
-            }
-        }
-    });
-    // --- LOGIN GOOGLE (ESTRATÉGIA ADAPTATIVA) ---
-  window.fazerLoginGoogle = async () => {
-        const btnGoogle = document.querySelector('.btn-google');
-        if (btnGoogle) {
-            btnGoogle.innerHTML = 'Conectando...';
-            btnGoogle.disabled = true;
-        }
-
-        try {
-            // Tenta fazer login com POPUP (funciona melhor no GitHub Pages)
-            // Isso evita o erro de "handler.js" e a perda de sessão no redirect
-            const result = await signInWithPopup(auth, provider);
-            
-            console.log("✅ Login com Popup realizado:", result.user.displayName);
-            alert("Sucesso! Bem-vindo(a) " + result.user.displayName);
-            
-            fecharLogin();
-            mostrarPerfil(result.user);
-
-        } catch (error) {
-            console.error("❌ Erro no Popup:", error);
-            
-            // Restaura o botão
+        // --- 1. FUNÇÃO HÍBRIDA DE LOGIN ---
+        window.fazerLoginGoogle = async () => {
+            const btnGoogle = document.querySelector('.btn-google');
             if (btnGoogle) {
-                btnGoogle.innerHTML = 'Continuar com Google';
-                btnGoogle.disabled = false;
+                btnGoogle.innerHTML = `<div style="width:16px;height:16px;border:2px solid #555;border-radius:50%;border-top-color:transparent;animation:spin 1s linear infinite;margin-right:8px;"></div> Processando...`;
+                btnGoogle.disabled = true;
             }
 
-            if (error.code === 'auth/popup-blocked') {
-                alert("O navegador bloqueou a janela de login.\nPor favor, permita 'Pop-ups' para este site nas configurações do navegador.");
-            } else if (error.code === 'auth/popup-closed-by-user') {
-                console.log("Usuário fechou a janela.");
-            } else if (error.code === 'auth/unauthorized-domain') {
-                 alert("⚠️ Erro: Domínio não autorizado.\nVá ao Firebase Console > Authentication > Settings > Authorized Domains e adicione: studionayarabrisola.github.io");
-            } else {
+            try {
+                if (isMobileDevice()) {
+                    // MODO MOBILE: Usa REDIRECT (resolve o problema do "conectando" infinito)
+                    // Marcamos que o usuário tentou logar
+                    sessionStorage.setItem('loginEmAndamento', 'true');
+                    console.log("📱 Mobile detectado. Usando Redirect...");
+                    await signInWithRedirect(auth, provider);
+                    // A página vai recarregar sozinha, não faz mais nada aqui.
+                } else {
+                    // MODO PC: Usa POPUP (mais fluido)
+                    console.log("💻 PC detectado. Usando Popup...");
+                    const result = await signInWithPopup(auth, provider);
+                    console.log("✅ Login PC Sucesso:", result.user.displayName);
+                    fecharLogin(); // O monitor de estado atualiza a tela
+                }
+            } catch (error) {
+                console.error("❌ Erro no Login:", error);
+                if (btnGoogle) {
+                    btnGoogle.innerHTML = 'Tentar Google Novamente';
+                    btnGoogle.disabled = false;
+                }
                 alert("Erro ao conectar: " + error.message);
             }
-        }
-    };
+        };
 
-    // --- LOGOUT ---
-    window.fazerLogout = async () => {
-        if (!confirm("Deseja realmente sair da sua conta?")) return;
-        
-        try {
-            await signOut(auth);
-            console.log("✅ Logout realizado");
+        // --- 2. RECUPERAÇÃO DO LOGIN APÓS REDIRECT (MOBILE) ---
+        window.addEventListener('load', async () => {
+            // Só executa se estivermos esperando um login (para economizar recursos)
+            const loginPendente = sessionStorage.getItem('loginEmAndamento');
             
-            // Limpa estado
-            sessionStorage.removeItem('googleLoginInProgress');
-            
-            // Recarrega para garantir estado limpo
-            setTimeout(() => {
-                window.location.reload();
-            }, 300);
-            
-        } catch (error) {
-            console.error("❌ Erro ao sair:", error);
-            alert("Erro ao desconectar. Tente novamente.");
-        }
-    };
-
-    // --- NAVEGAÇÃO ---
-    window.verificarLogin = () => {
-        const user = auth.currentUser;
-        if (user) {
-            window.location.href = 'servicos.html';
-        } else {
-            abrirLogin();
-        }
-    };
-
-    // --- LÓGICA DO MODAL ---
-    window.abrirLogin = () => { 
-        document.getElementById('modalLogin').style.display = 'flex'; 
-        const user = auth.currentUser;
-        if (user) { 
-            mostrarPerfil(user); 
-        } else { 
-            mostrarSocial(); 
-        }
-    };
-    
-    window.fecharLogin = () => { 
-        document.getElementById('modalLogin').style.display = 'none'; 
-    };
-    
-    window.mostrarFormulario = () => { 
-        esconderTudo(); 
-        document.getElementById('viewEmail').style.display = 'block'; 
-    };
-    
-    window.mostrarSocial = () => { 
-        esconderTudo(); 
-        document.getElementById('viewSocial').style.display = 'block'; 
-    };
-
-    // --- MOSTRAR PERFIL ---
-    window.mostrarPerfil = (user) => {
-        esconderTudo();
-        const viewLogged = document.getElementById('viewLogged');
-        if (viewLogged) {
-            viewLogged.style.display = 'block';
-        }
-        
-        const nomeElement = document.getElementById('nomeUsuarioLogado');
-        const emailElement = document.getElementById('emailUsuarioLogado');
-        const imgElement = document.getElementById('imgPerfilUsuario');
-        
-        if (nomeElement) {
-            nomeElement.innerText = user.displayName || "Cliente";
-        }
-        if (emailElement) {
-            emailElement.innerText = user.email || "";
-        }
-        if (imgElement && user.photoURL) {
-            imgElement.src = user.photoURL;
-        }
-        
-        buscarAgendamentosReal(user);
-    };
-
-    // --- BUSCAR AGENDAMENTOS ---
-    async function buscarAgendamentosReal(user) {
-        const listaContainer = document.getElementById('containerAgendamentos');
-        const contadorElement = document.getElementById('contadorAgendamentos');
-        const totalElement = document.getElementById('totalAgendamentos');
-        const statusFiltro = document.getElementById('statusFiltro');
-        
-        if (!listaContainer) return;
-        
-        listaContainer.innerHTML = '<div class="loading-spinner">🔍 Buscando seus agendamentos...</div>';
-        if (contadorElement) contadorElement.style.display = 'none';
-
-        try {
-            const q = query(collection(db, "agendamentos"), where("uid", "==", user.uid));
-            const querySnapshot = await getDocs(q);
-            
-            listaContainer.innerHTML = '';
-
-            if (querySnapshot.empty) {
-                listaContainer.innerHTML = `
-                    <div class="sem-agendamentos">
-                        <div class="sem-agendamentos-icon">📅</div>
-                        <strong>Nenhum agendamento encontrado</strong><br>
-                        <small>Agende seu primeiro horário!</small>
-                    </div>`;
-                return;
+            if (loginPendente) {
+                console.log("🔄 Verificando retorno do Google (Redirect)...");
+                try {
+                    const result = await getRedirectResult(auth);
+                    
+                    if (result) {
+                        console.log("✅ Login Mobile Confirmado!");
+                        sessionStorage.removeItem('loginEmAndamento');
+                        // O onAuthStateChanged vai cuidar da tela
+                    } else {
+                        // Se caiu aqui, o Google voltou mas sem usuário. 
+                        // 99% das vezes é porque o domínio não está autorizado.
+                        console.warn("⚠️ Retorno vazio.");
+                        sessionStorage.removeItem('loginEmAndamento');
+                        alert("⚠️ O login falhou silenciosamente.\n\nPor favor, verifique se o link 'studionayarabrisola.github.io' foi adicionado em 'Authorized Domains' no painel do Firebase.");
+                    }
+                } catch (error) {
+                    console.error("Erro no retorno:", error);
+                    sessionStorage.removeItem('loginEmAndamento');
+                    alert("Falha no login: " + error.message);
+                }
             }
+        });
 
-            const agendamentos = [];
-            querySnapshot.forEach((doc) => agendamentos.push({ id: doc.id, ...doc.data() }));
-            
-            agendamentos.sort((a, b) => {
-                if (a.dataCriacao && b.dataCriacao) return b.dataCriacao.toDate() - a.dataCriacao.toDate();
-                if (a.data && b.data) return converterDataStringParaTimestamp(b.data) - converterDataStringParaTimestamp(a.data);
-                return 0;
-            });
+        // --- 3. MONITOR GERAL DE ESTADO ---
+        onAuthStateChanged(auth, (user) => {
+            const btnHome = document.getElementById('btnEntrar');
+            if (!btnHome) return;
 
-            if (contadorElement) {
-                contadorElement.style.display = 'flex';
-                if (totalElement) totalElement.textContent = agendamentos.length;
-                if (statusFiltro) statusFiltro.textContent = agendamentos.length + ' encontrado' + (agendamentos.length !== 1 ? 's' : '');
-            }
-
-            let agendamentosHTML = '';
-            let delay = 0;
-            
-            agendamentos.forEach((agendamento) => {
-                const dataFormatada = formatarData(agendamento.data);
-                let horaFormatada = agendamento.hora || "";
-                if (horaFormatada.includes(':')) horaFormatada = horaFormatada.substring(0, 5);
-                const status = agendamento.status?.toLowerCase() || "confirmado";
-                const precoFormatado = agendamento.preco ? `R$ ${parseFloat(agendamento.preco).toFixed(2).replace('.', ',')}` : "";
+            if (user) {
+                console.log("👤 Logado:", user.email);
+                btnHome.innerHTML = `<span style="color:#009e60">Olá, ${user.displayName ? user.displayName.split(' ')[0] : 'Cliente'}</span>`;
+                btnHome.classList.add('logado');
                 
-                agendamentosHTML += `
-                    <div class="item-agendamento" style="animation-delay: ${delay}s;">
-                        <div class="info-agenda">
-                            <span class="data-hora">${dataFormatada} ${horaFormatada ? 'às ' + horaFormatada : ''}</span>
-                            <span class="servico-nome">${agendamento.servico || "Serviço"}</span>
-                            ${precoFormatado ? `<span class="preco-agenda">${precoFormatado}</span>` : ''}
-                        </div>
-                        <span class="status-badge ${getStatusClass(status)}">${getStatusText(status)}</span>
-                    </div>`;
-                delay += 0.05;
-            });
-            listaContainer.innerHTML = agendamentosHTML;
-        } catch (error) {
-            console.error("❌ Erro ao buscar agendamentos:", error);
-            listaContainer.innerHTML = `
-                <div style="color:#721c24; background:#f8d7da; padding:15px; border-radius:8px; text-align:center;">
-                    ⚠️ Erro ao carregar agendamentos.<br>
-                    <small>Tente novamente mais tarde.</small>
-                </div>`;
-        }
-    }
-
-    // --- FUNÇÕES AUXILIARES ---
-    function converterDataStringParaTimestamp(dataString) {
-        if (!dataString || !dataString.includes('/')) return 0;
-        try { 
-            const [d, m, a] = dataString.split('/').map(Number); 
-            return new Date(a, m - 1, d).getTime(); 
-        } catch (e) { 
-            return 0; 
-        }
-    }
-    
-    function formatarData(dataString) {
-        if (!dataString) return "";
-        if (dataString.includes('/')) {
-            const [d, m, a] = dataString.split('/');
-            const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-            return `${d} ${meses[parseInt(m)-1]} ${a}`;
-        }
-        return dataString;
-    }
-    
-    function getStatusClass(s) { 
-        const c = { 
-            'confirmado': 'status-confirmado', 
-            'pendente': 'status-pendente', 
-            'cancelado': 'status-cancelado', 
-            'realizado': 'status-realizado' 
-        }; 
-        return c[s] || 'status-confirmado'; 
-    }
-    
-    function getStatusText(s) { 
-        const t = { 
-            'confirmado': 'Confirmado', 
-            'pendente': 'Pendente', 
-            'cancelado': 'Cancelado', 
-            'realizado': 'Realizado' 
-        }; 
-        return t[s] || 'Confirmado'; 
-    }
-    
-    function esconderTudo() { 
-        const viewEmail = document.getElementById('viewEmail');
-        const viewSocial = document.getElementById('viewSocial');
-        const viewLogged = document.getElementById('viewLogged');
-        
-        if (viewEmail) viewEmail.style.display = 'none';
-        if (viewSocial) viewSocial.style.display = 'none';
-        if (viewLogged) viewLogged.style.display = 'none';
-    }
-    
-    window.toggleSenha = () => { 
-        const input = document.getElementById('senhaInput');
-        const icone = document.getElementById('iconeOlho');
-        if (input) {
-            const isPassword = input.type === "password";
-            input.type = isPassword ? "text" : "password";
-            if (icone) {
-                icone.innerHTML = isPassword ? 
-                    '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>' :
-                    '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+                // Se modal estiver aberto, mostra perfil
+                if(document.getElementById('modalLogin').style.display === 'flex') {
+                    mostrarPerfil(user);
+                }
+            } else {
+                console.log("👤 Deslogado");
+                btnHome.innerHTML = `<svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg> Entrar`;
+                btnHome.classList.remove('logado');
+                mostrarSocial();
             }
-        }
-    };
+        });
 
-    // --- MONITORAR ESTADO DE AUTENTICAÇÃO ---
-    onAuthStateChanged(auth, (user) => {
-        const btnHome = document.getElementById('btnEntrar');
-        if (!btnHome) return;
-        
-        if (user) {
-            // USUÁRIO LOGADO
-            console.log("✅ Usuário autenticado:", user.email);
-            
-            btnHome.innerHTML = `
-                <svg viewBox="0 0 24 24" width="24" height="24">
-                    <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-                </svg>
-                ${user.displayName || 'Cliente'}
-            `;
-            btnHome.classList.add('logado');
-            
-            // Se o modal estiver aberto, atualiza para a vista logada
-            const modalLogin = document.getElementById('modalLogin');
-            if (modalLogin && modalLogin.style.display === 'flex') {
-                mostrarPerfil(user);
+        // --- RESTANTE DA UI (Logout, Mostrar Perfil, etc) ---
+        window.fazerLogout = async () => {
+            if(confirm("Sair da conta?")) {
+                await signOut(auth);
+                window.location.reload();
             }
-            
-        } else {
-            // USUÁRIO DESLOGADO
-            console.log("👤 Usuário não autenticado");
-            
-            btnHome.innerHTML = `
-                <svg viewBox="0 0 24 24">
-                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                    <polyline points="10 17 15 12 10 7"></polyline>
-                    <line x1="15" y1="12" x2="3" y2="12"></line>
-                </svg>
-                Entrar
-            `;
-            btnHome.classList.remove('logado');
-            btnHome.style.color = 'var(--cor-principal)';
-            
-            // Limpa estado
-            sessionStorage.removeItem('googleLoginInProgress');
-        }
-    });
+        };
 
-    // --- ESTILO PARA SPINNER ---
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes spin { 
-            0% { transform: rotate(0deg); } 
-            100% { transform: rotate(360deg); } 
-        }
-        .btn-google:disabled {
-            cursor: not-allowed;
-        }
-    `;
-    document.head.appendChild(style);
+        window.abrirLogin = () => { 
+            document.getElementById('modalLogin').style.display = 'flex'; 
+            if(!auth.currentUser) mostrarSocial();
+            else mostrarPerfil(auth.currentUser);
+        };
+        window.fecharLogin = () => { document.getElementById('modalLogin').style.display = 'none'; };
+        window.mostrarSocial = () => { 
+            document.getElementById('viewLogged').style.display = 'none';
+            document.getElementById('viewSocial').style.display = 'block'; 
+            document.getElementById('viewEmail').style.display = 'none';
+        };
+        window.mostrarFormulario = () => {
+             document.getElementById('viewSocial').style.display = 'none'; 
+             document.getElementById('viewEmail').style.display = 'block';
+        };
+        window.verificarLogin = () => {
+            if(auth.currentUser) window.location.href = 'servicos.html';
+            else abrirLogin();
+        };
 
-    // --- INICIALIZAÇÃO ---
-    console.log("🔥 Firebase inicializado");
-    console.log("📱 Mobile detectado:", isMobileDevice());
-    
-    // Limpa estado ao carregar
-    window.addEventListener('beforeunload', () => {
-        sessionStorage.removeItem('googleLoginInProgress');
-    });
-</script>
+        async function mostrarPerfil(user) {
+            document.getElementById('viewSocial').style.display = 'none';
+            document.getElementById('viewLogged').style.display = 'block';
+            document.getElementById('nomeUsuarioLogado').innerText = user.displayName || "Cliente";
+            if(user.photoURL) document.getElementById('imgPerfilUsuario').src = user.photoURL;
 
+            // Busca Agendamentos
+            const lista = document.getElementById('containerAgendamentos');
+            lista.innerHTML = 'Buscando...';
+            try {
+                const q = query(collection(db, "agendamentos"), where("uid", "==", user.uid));
+                const snap = await getDocs(q);
+                lista.innerHTML = '';
+                if(snap.empty) lista.innerHTML = '<div style="text-align:center;padding:10px;color:#888">Nenhum agendamento.</div>';
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    lista.innerHTML += `<div class="item-agendamento"><div><b>${d.data}</b> - ${d.hora}<br><small>${d.servico}</small></div><span style="color:green">Confirmado</span></div>`;
+                });
+            } catch(e) { lista.innerHTML = 'Erro ao buscar.'; }
+        }
+    </script>
 </body>
-
 </html>
-
-
-
-
-
-
