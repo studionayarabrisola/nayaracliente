@@ -15,10 +15,7 @@
             --cor-clara: #4cc9f0; 
             --cor-texto: #2c3e50; 
             --branco: #ffffff;
-            --cor-sucesso: #009e60; /* Verde */
-            --cor-pendente: #ff9800; /* Laranja */
-            --cor-cancelado: #f44336; /* Vermelho */
-            --cor-realizado: #4caf50; /* Verde claro */
+            --cor-sucesso: #009e60; 
         }
 
         body {
@@ -221,74 +218,76 @@
         .btn-google img { width: 20px; }
         .btn-email { background-color: var(--cor-principal); color: white; border: none; }
 
-        /* TELA FORMULÁRIO (EMAIL) */
+        /* TELA FORMULÁRIO (EMAIL ATUALIZADO) */
         #viewEmail { animation: slideInRight 0.3s ease-out; }
+        
         .btn-voltar-modal {
             position: absolute; top: 20px; left: 20px;
             background: none; border: 1px solid #eee; border-radius: 20px;
             color: var(--cor-principal); padding: 5px 15px; font-size: 0.8rem;
             cursor: pointer; font-weight: 600;
         }
+        
+        .marca-login {
+            font-family: 'Dancing Script', cursive;
+            color: var(--cor-clara); font-size: 2.2rem;
+            margin-top: 30px; margin-bottom: 5px; line-height: 1.1;
+        }
+        
+        .subtitulo-login { font-size: 0.9rem; color: #888; margin-bottom: 20px; }
+
         .input-custom {
-            width: 100%; padding: 14px 20px; margin-bottom: 15px;
+            width: 100%; padding: 14px 20px; margin-bottom: 10px;
             border: 1px solid #ddd; border-radius: 25px;
             font-size: 0.95rem; box-sizing: border-box; background-color: #fcfcfc;
         }
+        .input-custom:focus { border-color: var(--cor-principal); outline: none; background-color: white; }
+        
         .btn-entrar-form {
             width: 100%; padding: 14px; background-color: var(--cor-principal);
             color: white; border: none; border-radius: 25px;
             font-size: 1rem; font-weight: bold; cursor: pointer;
+            margin-top: 10px;
         }
-
-        /* --- TELA LOGADO (NOVO LAYOUT) --- */
-        #viewLogged { animation: slideInRight 0.3s ease-out; }
         
+        .link-toggle {
+            display: block; margin-top: 15px; font-size: 0.85rem;
+            color: #555; cursor: pointer; text-decoration: underline;
+        }
+        .link-toggle:hover { color: var(--cor-principal); }
+
+        /* --- TELA LOGADO --- */
+        #viewLogged { animation: slideInRight 0.3s ease-out; }
         .perfil-foto-area {
             width: 80px; height: 80px;
-            border-radius: 50%;
-            margin: 0 auto 10px auto;
-            background-color: #eee;
-            overflow: hidden;
+            border-radius: 50%; margin: 0 auto 10px auto;
+            background-color: #eee; overflow: hidden;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
         .perfil-foto-area img { width: 100%; height: 100%; object-fit: cover; }
         
-        .subtitulo-email {
-            font-size: 0.85rem; color: #888; margin-bottom: 20px;
-        }
-
-        /* LISTA DE AGENDAMENTOS ESTILIZADA */
         .lista-agendamentos {
-            text-align: left;
-            max-height: 300px;
-            overflow-y: auto;
-            margin-bottom: 25px;
-            padding-right: 5px;
+            text-align: left; max-height: 300px; overflow-y: auto;
+            margin-bottom: 25px; padding-right: 5px;
         }
-        /* Scrollbar */
         .lista-agendamentos::-webkit-scrollbar { width: 6px; }
         .lista-agendamentos::-webkit-scrollbar-thumb { background-color: #ddd; border-radius: 3px; }
 
         .item-agendamento {
-            background: #f9f9f9;
-            border-left: 4px solid var(--cor-clara);
-            padding: 12px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            background: #f9f9f9; border-left: 4px solid var(--cor-clara);
+            padding: 12px; margin-bottom: 10px; border-radius: 8px; font-size: 0.9rem;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             animation: fadeInItem 0.3s ease-out;
+            transition: transform 0.2s;
         }
+        .item-agendamento:hover { transform: translateY(-2px); }
         
-        .info-agenda { display: flex; flex-direction: column; gap: 4px; }
+        .info-agenda { display: flex; flex-direction: column; gap: 4px; flex: 1; }
         .data-hora { font-weight: bold; color: var(--cor-principal); font-size: 0.95rem; }
         .servico-nome { color: #555; font-size: 0.85rem; }
         .preco-agenda { color: var(--cor-sucesso); font-weight: bold; font-size: 0.85rem; }
-
-        /* BAGDES DE STATUS */
+        
         .status-badge {
             font-size: 0.7rem; padding: 4px 10px; border-radius: 12px;
             font-weight: bold; white-space: nowrap; margin-left: 10px;
@@ -303,9 +302,6 @@
             padding: 12px 30px; border-radius: 25px; font-weight: bold;
             cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
         }
-        .btn-sair:hover { background-color: #ffcdd2; }
-
-        .sem-agendamentos { text-align: center; padding: 20px; color: #888; font-size: 0.9rem; }
 
         @media (max-width: 480px) {
             .container { width: 88%; padding: 30px 20px; }
@@ -367,9 +363,17 @@
             <div id="viewEmail" class="view-section">
                 <button class="btn-voltar-modal" onclick="mostrarSocial()">← Voltar</button>
                 <div class="marca-login">Nayara Brisola</div>
+                <div class="subtitulo-login" id="tituloFormEmail">Faça login com seu e-mail</div>
+
+                <input type="text" id="nomeInput" class="input-custom" placeholder="Seu Nome Completo" style="display: none;">
                 <input type="email" id="emailInput" class="input-custom" placeholder="exemplo@gmail.com">
-                <input type="password" id="senhaInput" class="input-custom" placeholder="••••••••">
-                <button class="btn-entrar-form" onclick="alert('Use o Google!')">Entrar</button>
+                <input type="password" id="senhaInput" class="input-custom" placeholder="Sua senha (mínimo 6 dígitos)">
+                
+                <button id="btnAcaoEmail" class="btn-entrar-form" onclick="processarAuthEmail()">Entrar</button>
+                
+                <span class="link-toggle" onclick="alternarModo()" id="linkToggle">
+                    Não tem conta? <strong>Cadastre-se</strong>
+                </span>
             </div>
 
             <div id="viewLogged" class="view-section">
@@ -377,14 +381,13 @@
                     <img id="imgPerfilUsuario" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Perfil">
                 </div>
                 <div class="titulo-login" id="nomeUsuarioLogado" style="margin-bottom: 5px;">Carregando...</div>
-                <div class="subtitulo-email" id="emailUsuarioLogado">...</div>
+                <div id="emailUsuarioLogado" style="color:#888; font-size:0.85rem; margin-bottom:15px;">...</div>
                 
                 <h3 style="color:#006080; font-size:1rem; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px; text-align: left;">
                     📅 Seus Agendamentos
                 </h3>
-                <div class="lista-agendamentos" id="containerAgendamentos">
-                    <div style="color:#888;">Carregando...</div>
-                </div>
+                
+                <div class="lista-agendamentos" id="containerAgendamentos"></div>
                 
                 <button class="btn-sair" onclick="fazerLogout()">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -400,7 +403,8 @@
 
     <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    // ADICIONEI AS FUNÇÕES DE CRIAR CONTA E LOGIN POR EMAIL AQUI:
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -418,33 +422,110 @@
     const provider = new GoogleAuthProvider();
     auth.languageCode = 'pt';
 
-    // --- LOGIN SIMPLIFICADO (POPUP) ---
+    // --- VARIÁVEL PARA SABER SE É LOGIN OU CADASTRO ---
+    let isRegisterMode = false;
+
+    // --- GOOGLE LOGIN (Mantido Igual) ---
     window.fazerLoginGoogle = async () => {
         const btnGoogle = document.querySelector('.btn-google');
         if (btnGoogle) {
             btnGoogle.innerHTML = 'Abrindo Google...';
             btnGoogle.disabled = true;
-            btnGoogle.style.opacity = '0.7';
         }
 
         try {
             const result = await signInWithPopup(auth, provider);
-            console.log("✅ Sucesso:", result.user.displayName);
             fecharLogin();
             mostrarPerfil(result.user);
-
         } catch (error) {
-            console.error("❌ Erro no Login:", error);
+            console.error("Erro Google:", error);
             if (btnGoogle) {
-                btnGoogle.innerHTML = `Tentar Novamente`;
+                btnGoogle.innerHTML = 'Tentar Novamente';
                 btnGoogle.disabled = false;
-                btnGoogle.style.opacity = '1';
             }
-            if (error.code === 'auth/popup-blocked') {
-                alert("⚠️ O SEU NAVEGADOR BLOQUEOU A JANELA!\n\nPor favor, permita pop-ups ou tente outro navegador.");
+            alert("Erro ao entrar com Google.");
+        }
+    };
+
+    // --- NOVA LÓGICA: LOGIN E CADASTRO POR E-MAIL ---
+    
+    // 1. Alternar entre "Entrar" e "Criar Conta"
+    window.alternarModo = () => {
+        isRegisterMode = !isRegisterMode;
+        
+        const titulo = document.getElementById('tituloFormEmail');
+        const btn = document.getElementById('btnAcaoEmail');
+        const link = document.getElementById('linkToggle');
+        const nomeInput = document.getElementById('nomeInput');
+        
+        if (isRegisterMode) {
+            titulo.innerText = "Crie sua nova conta";
+            btn.innerText = "Cadastrar";
+            link.innerHTML = "Já tem conta? <strong>Entrar</strong>";
+            nomeInput.style.display = 'block'; // Mostra campo nome
+        } else {
+            titulo.innerText = "Faça login com seu e-mail";
+            btn.innerText = "Entrar";
+            link.innerHTML = "Não tem conta? <strong>Cadastre-se</strong>";
+            nomeInput.style.display = 'none'; // Esconde campo nome
+        }
+    };
+
+    // 2. Processar o formulário
+    window.processarAuthEmail = async () => {
+        const email = document.getElementById('emailInput').value;
+        const senha = document.getElementById('senhaInput').value;
+        const nome = document.getElementById('nomeInput').value;
+        const btn = document.getElementById('btnAcaoEmail');
+
+        if (!email || !senha) {
+            alert("Por favor, preencha e-mail e senha.");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Processando...";
+
+        try {
+            if (isRegisterMode) {
+                // --- MODO CADASTRO ---
+                if (!nome) {
+                    alert("Por favor, digite seu nome.");
+                    btn.disabled = false; btn.innerText = "Cadastrar";
+                    return;
+                }
+                
+                // Cria a conta
+                const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
+                // Atualiza o nome do usuário no Firebase
+                await updateProfile(userCredential.user, { displayName: nome });
+                
+                console.log("Cadastro Sucesso:", userCredential.user);
+                fecharLogin();
+                mostrarPerfil(userCredential.user); // Usa o objeto atualizado
+                
             } else {
-                alert("Erro ao entrar: " + error.message);
+                // --- MODO LOGIN ---
+                const userCredential = await signInWithEmailAndPassword(auth, email, senha);
+                console.log("Login Sucesso:", userCredential.user);
+                fecharLogin();
+                mostrarPerfil(userCredential.user);
             }
+            
+        } catch (error) {
+            console.error("Erro Auth:", error.code, error.message);
+            btn.disabled = false;
+            btn.innerText = isRegisterMode ? "Cadastrar" : "Entrar";
+            
+            // Tratamento de erros em Português
+            let mensagem = "Erro ao realizar operação.";
+            if (error.code === 'auth/email-already-in-use') mensagem = "Este e-mail já está cadastrado.";
+            else if (error.code === 'auth/wrong-password') mensagem = "Senha incorreta.";
+            else if (error.code === 'auth/user-not-found') mensagem = "Usuário não encontrado.";
+            else if (error.code === 'auth/invalid-email') mensagem = "E-mail inválido.";
+            else if (error.code === 'auth/weak-password') mensagem = "A senha deve ter pelo menos 6 caracteres.";
+            
+            alert(mensagem);
         }
     };
 
@@ -454,7 +535,7 @@
         catch (e) { alert("Erro ao sair"); }
     };
 
-    // --- GERENCIAMENTO DE TELAS ---
+    // --- NAVEGAÇÃO ---
     window.verificarLogin = () => {
         if (auth.currentUser) window.location.href = 'servicos.html';
         else abrirLogin();
@@ -477,16 +558,22 @@
     window.mostrarFormulario = () => { 
         document.getElementById('viewSocial').style.display = 'none';
         document.getElementById('viewEmail').style.display = 'block'; 
+        // Reseta para modo login ao abrir
+        isRegisterMode = true; 
+        alternarModo(); // Chama uma vez para virar Login (false)
     };
 
-    // --- PERFIL E LISTA (LÓGICA DA VERSÃO COMPLETA) ---
+    // --- PERFIL E LISTA DE AGENDAMENTOS (MANTER VISUAL BONITO) ---
     window.mostrarPerfil = (user) => {
         document.getElementById('viewSocial').style.display = 'none';
+        document.getElementById('viewEmail').style.display = 'none'; // Garante que fecha o form
         document.getElementById('viewLogged').style.display = 'block';
         
         document.getElementById('nomeUsuarioLogado').innerText = user.displayName || "Cliente";
         document.getElementById('emailUsuarioLogado').innerText = user.email || "";
-        if(user.photoURL) document.getElementById('imgPerfilUsuario').src = user.photoURL;
+        // Se não tiver foto (login email), usa padrão
+        const fotoUrl = user.photoURL || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+        document.getElementById('imgPerfilUsuario').src = fotoUrl;
         
         buscarAgendamentosReal(user);
     };
@@ -503,28 +590,27 @@
             lista.innerHTML = '';
             
             if (snap.empty) {
-                lista.innerHTML = '<div class="sem-agendamentos">Você ainda não tem agendamentos.</div>';
+                lista.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">Você ainda não tem agendamentos.</div>';
                 return;
             }
 
             const agendamentos = [];
-            snap.forEach((doc) => agendamentos.push({ id: doc.id, ...doc.data() }));
+            snap.forEach(doc => agendamentos.push(doc.data()));
 
-            // Ordenar por data (Função auxiliar interna)
             agendamentos.sort((a, b) => {
                 const dateA = a.dataCriacao ? a.dataCriacao.toDate() : converterDataStringParaTimestamp(a.data);
                 const dateB = b.dataCriacao ? b.dataCriacao.toDate() : converterDataStringParaTimestamp(b.data);
-                return dateB - dateA; // Mais recente primeiro
+                return dateB - dateA; 
             });
 
-            agendamentos.forEach(item => {
+            agendamentos.forEach((item, index) => {
                 const dataF = formatarData(item.data);
                 const horaF = item.hora ? item.hora.substring(0, 5) : '';
                 const precoF = item.preco ? `R$ ${parseFloat(item.preco).toFixed(2).replace('.', ',')}` : '';
                 const status = item.status ? item.status.toLowerCase() : 'confirmado';
 
                 lista.innerHTML += `
-                    <div class="item-agendamento">
+                    <div class="item-agendamento" style="animation-delay: ${index * 0.1}s">
                         <div class="info-agenda">
                             <span class="data-hora">${dataF} ${horaF ? 'às '+horaF : ''}</span>
                             <span class="servico-nome">${item.servico}</span>
@@ -533,13 +619,14 @@
                         <span class="status-badge ${getStatusClass(status)}">${getStatusText(status)}</span>
                     </div>`;
             });
+
         } catch (e) {
             console.error(e);
             lista.innerHTML = '<div style="color:red; text-align:center;">Erro ao buscar dados.</div>';
         }
     }
 
-    // --- FUNÇÕES AUXILIARES VISUAIS (DA VERSÃO COMPLETA) ---
+    // --- FUNÇÕES AUXILIARES ---
     function formatarData(dataString) {
         if (!dataString) return "";
         if (dataString.includes('/')) {
@@ -573,10 +660,12 @@
                 btnHome.innerHTML = `<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg> ${user.displayName ? user.displayName.split(' ')[0] : 'Conta'}`;
                 btnHome.classList.add('logado');
             }
-            // Atualiza modal se aberto
             const modal = document.getElementById('modalLogin');
-            if(modal && modal.style.display === 'flex' && document.getElementById('viewSocial').style.display === 'block') {
-                mostrarPerfil(user);
+            if(modal && modal.style.display === 'flex') {
+                // Se estiver na tela de login, muda pro perfil. Se já estiver no perfil, ok.
+                if(document.getElementById('viewLogged').style.display === 'none') {
+                     mostrarPerfil(user);
+                }
             }
         } else {
             if(btnHome) {
