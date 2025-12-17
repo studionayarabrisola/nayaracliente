@@ -631,37 +631,43 @@
 
     // --- TRATAR RETORNO DO REDIRECT (CRÍTICO PARA MOBILE) ---
    // --- TRATAR RETORNO DO REDIRECT (CORRIGIDO PARA MOBILE) ---
-   window.addEventListener('load', () => {
-        // Não vamos usar IF. Vamos perguntar direto ao Firebase.
-        // Se não houver login, ele simplesmente não faz nada.
-        
-        getRedirectResult(auth)
-            .then((result) => {
-                if (result) {
-                    // SUCESSO! O Google devolveu o usuário
-                    console.log("✅ Login recuperado com sucesso:", result.user.displayName);
-                    alert("Bem-vindo(a) " + result.user.displayName + "!"); // Alerta para confirmares no telemóvel
-                    
-                    fecharLogin();
-                    mostrarPerfil(result.user);
-                } else {
-                    // Nenhum login pendente. Vida normal.
-                    console.log("ℹ️ Nenhum retorno de redirect detectado.");
-                }
-            })
-            .catch((error) => {
-                // Aqui pegamos o erro real!
-                console.error("❌ Erro no Redirect:", error);
-                
-                // ESSE ALERTA É O MAIS IMPORTANTE
-                alert("Erro no Login: " + error.code + "\n" + error.message);
-                
-                if (error.code === 'auth/unauthorized-domain') {
-                    alert("⚠️ ATENÇÃO: O domínio do site não está autorizado no Firebase!");
-                }
-            });
-    });
+   // --- TRATAMENTO DE LOGIN (VERSÃO FINAL PARA GITHUB) ---
+    window.addEventListener('load', async () => {
+        // Pequeno delay para garantir que o Firebase carregou no mobile
+        await new Promise(resolve => setTimeout(resolve, 500));
 
+        try {
+            // Pergunta ao Firebase: "Veio alguém do Google?"
+            const result = await getRedirectResult(auth);
+
+            if (result) {
+                // CENÁRIO 1: LOGIN BEM-SUCEDIDO
+                console.log("✅ Login Mobile confirmado:", result.user.displayName);
+                
+                // Atualiza a tela
+                fecharLogin();
+                mostrarPerfil(result.user);
+                
+                // Opcional: Mostra um feedback rápido
+                // alert("Bem-vindo(a), " + result.user.displayName + "!"); 
+            } else {
+                // CENÁRIO 2: NENHUM LOGIN PENDENTE
+                // Isso é normal quando o usuário abre o site pela primeira vez
+                console.log("ℹ️ Nenhum retorno de login detectado.");
+            }
+
+        } catch (error) {
+            // CENÁRIO 3: ERRO
+            console.error("❌ Erro no Login:", error);
+
+            if (error.code === 'auth/unauthorized-domain') {
+                alert("⚠️ Erro de Configuração:\nO domínio do GitHub não está autorizado no Firebase Console.");
+            } else if (error.code !== 'auth/popup-closed-by-user') {
+                // Mostra erro apenas se não foi o usuário que fechou
+                alert("Falha ao entrar: " + error.message);
+            }
+        }
+    });
     // --- LOGIN GOOGLE (ESTRATÉGIA ADAPTATIVA) ---
     window.fazerLoginGoogle = async () => {
         const btnGoogle = document.querySelector('.btn-google');
@@ -1047,6 +1053,7 @@
 </body>
 
 </html>
+
 
 
 
