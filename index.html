@@ -603,7 +603,7 @@
         </div>
     </div>
 
-   <script type="module">
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, onAuthStateChanged, signOut, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -624,110 +624,184 @@
     const provider = new GoogleAuthProvider();
     auth.languageCode = 'pt';
 
-    // Detecta se é dispositivo móvel
-    function isMobileDevice() {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-               window.innerWidth <= 768;
-    }
+    // --- DETECTAR SE É MOBILE ---
+    const isMobileDevice = () => {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    };
 
-    // --- VERIFICAÇÃO INICIAL (Recupera login após redirect) ---
-    getRedirectResult(auth)
-        .then((result) => {
-            if (result) {
-                console.log("Login via redirecionamento recuperado com sucesso!");
-                // Fecha o modal após login bem-sucedido
-                setTimeout(() => {
-                    fecharLogin();
-                    // Recarrega a página para atualizar o estado
-                    window.location.reload();
-                }, 500);
-            }
-        })
-        .catch((error) => {
-            console.error("Erro no retorno do login:", error);
-            if (error.code !== 'auth/popup-closed-by-user' && 
-                error.code !== 'auth/cancelled-popup-request') {
-                console.warn("Erro no login:", error.message);
-            }
-        });
+    // --- TRATAR RETORNO DO REDIRECT (CRÍTICO PARA MOBILE) ---
+    window.addEventListener('load', () => {
+        // Verifica se a URL tem parâmetros de autenticação do Google
+        const urlParams = new URLSearchParams(window.location.search);
+        const hasAuthParams = urlParams.has('state') || urlParams.has('apiKey') || 
+                              urlParams.has('authType') || urlParams.has('code');
+        
+        if (hasAuthParams) {
+            console.log("📱 Detectado retorno de autenticação Google (mobile redirect)");
+            
+            // Processa o resultado do redirect
+            getRedirectResult(auth)
+                .then((result) => {
+                    if (result) {
+                        console.log("✅ Login via redirect processado com sucesso!");
+                        const user = result.user;
+                        
+                        // Limpa parâmetros da URL sem recarregar
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                        
+                        // Fecha modal se estiver aberto
+                        fecharLogin();
+                        
+                        // Atualiza interface
+                        if (window.mostrarPerfil) {
+                            mostrarPerfil(user);
+                        }
+                        
+                        // Feedback visual
+                        setTimeout(() => {
+                            if (document.getElementById('modalLogin').style.display !== 'flex') {
+                                const btnHome = document.getElementById('btnEntrar');
+                                if (btnHome) {
+                                    btnHome.innerHTML = `<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg> ${user.displayName || 'Cliente'}`;
+                                    btnHome.classList.add('logado');
+                                }
+                            }
+                        }, 500);
+                    }
+                })
+                .catch((error) => {
+                    console.error("❌ Erro ao processar redirect:", error);
+                    
+                    // Limpa URL mesmo com erro
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    
+                    // Mostra erro amigável
+                    if (error.code && !error.code.includes('cancelled')) {
+                        setTimeout(() => {
+                            alert("Erro ao conectar: " + (error.message || "Tente novamente"));
+                        }, 300);
+                    }
+                });
+        }
+    });
 
-    // 1. LOGIN GOOGLE - ESTRATÉGIA OTIMIZADA PARA MOBILE
+    // --- LOGIN GOOGLE (ESTRATÉGIA ADAPTATIVA) ---
     window.fazerLoginGoogle = async () => {
         const btnGoogle = document.querySelector('.btn-google');
+        if (!btnGoogle) return;
+        
         const textoOriginal = btnGoogle.innerHTML;
+        const isMobile = isMobileDevice();
         
         // Feedback visual imediato
-        btnGoogle.innerHTML = '<div style="width:20px;height:20px;border:2px solid #fff;border-radius:50%;border-top-color:transparent;animation:spin 1s linear infinite;margin-right:8px;"></div> A conectar...';
+        btnGoogle.innerHTML = `
+            <div style="width:20px;height:20px;border:2px solid #fff;border-radius:50%;border-top-color:transparent;animation:spin 1s linear infinite;margin-right:8px;"></div>
+            ${isMobile ? 'Redirecionando...' : 'Conectando...'}
+        `;
         btnGoogle.disabled = true;
+        btnGoogle.style.opacity = '0.8';
+        
+        console.log(`📱 Dispositivo: ${isMobile ? 'Mobile' : 'Desktop'}`);
         
         try {
-            // ESTRATÉGIA DIFERENCIADA POR DISPOSITIVO
-            if (isMobileDevice()) {
-                console.log("Dispositivo móvel detectado - usando redirecionamento");
-                // NO MOBILE: SEMPRE USA REDIRECT (mais confiável)
+            if (isMobile) {
+                // MOBILE: USA REDIRECT (funciona melhor)
+                console.log("🔄 Usando signInWithRedirect para mobile...");
+                
+                // Armazena estado para saber que iniciamos um login
+                sessionStorage.setItem('googleLoginInProgress', 'true');
+                
+                // Para mobile, damos um tempo antes de mostrar alerta
+                setTimeout(() => {
+                    if (sessionStorage.getItem('googleLoginInProgress') === 'true') {
+                        alert("Você será redirecionado para a página de login do Google. Volte para esta página após fazer login.");
+                    }
+                }, 800);
+                
                 await signInWithRedirect(auth, provider);
-                // A página será redirecionada, então não fazemos mais nada aqui
-                return;
+                // O usuário será redirecionado para página do Google
+                // O getRedirectResult() vai capturar quando voltar
+                
             } else {
-                // NO DESKTOP: TENTA POPUP PRIMEIRO
+                // DESKTOP: TENTA POPUP PRIMEIRO
+                console.log("🖥️ Tentando signInWithPopup...");
+                
                 try {
                     await signInWithPopup(auth, provider);
-                    fecharLogin();
+                    console.log("✅ Login via popup bem-sucedido!");
+                    fecharLogin(); // Fecha modal se popup funcionar
+                    sessionStorage.removeItem('googleLoginInProgress');
+                    
                 } catch (popupError) {
-                    console.log("Popup falhou, tentando redirecionamento...", popupError);
-                    // Fallback para redirect no desktop também
-                    await signInWithRedirect(auth, provider);
+                    console.log("⚠️ Popup falhou, tentando redirect...", popupError);
+                    
+                    // Se popup falhar, tenta redirect (para desktop também)
+                    if (popupError.code === 'auth/popup-blocked' || 
+                        popupError.code === 'auth/popup-closed-by-user' ||
+                        popupError.code.includes('popup')) {
+                        
+                        await signInWithRedirect(auth, provider);
+                        alert("Usando redirecionamento. Volte para esta página após fazer login.");
+                    } else {
+                        throw popupError; // Re-lança outros erros
+                    }
                 }
             }
+            
         } catch (error) {
-            console.error("Erro fatal no login:", error);
+            console.error("❌ Erro no login:", error.code, error.message);
+            
+            // Limpa estado
+            sessionStorage.removeItem('googleLoginInProgress');
+            
+            // Restaura botão
+            setTimeout(() => {
+                btnGoogle.innerHTML = textoOriginal;
+                btnGoogle.disabled = false;
+                btnGoogle.style.opacity = '1';
+            }, 500);
             
             // Mensagens de erro amigáveis
-            let mensagemErro = "Não foi possível conectar. ";
             if (error.code === 'auth/popup-blocked') {
-                mensagemErro += "O popup foi bloqueado. Tente novamente ou use outro navegador.";
+                alert("O popup foi bloqueado pelo navegador. Por favor:\n1. Permita popups para este site\n2. Ou tente novamente - usaremos redirecionamento");
             } else if (error.code === 'auth/popup-closed-by-user') {
-                mensagemErro = "Login cancelado.";
+                // Não mostra alerta, apenas registra
+                console.log("Popup fechado pelo usuário");
+            } else if (error.code === 'auth/cancelled-popup-request') {
+                // Ignora
+            } else if (error.code === 'auth/unauthorized-domain') {
+                alert("Erro de configuração: Domínio não autorizado no Firebase.");
             } else {
-                mensagemErro += "Tente novamente.";
+                setTimeout(() => {
+                    alert("Não foi possível conectar com o Google.\nErro: " + (error.message || "Desconhecido"));
+                }, 300);
             }
-            
-            // Recria o botão original
-            btnGoogle.innerHTML = textoOriginal;
-            btnGoogle.disabled = false;
-            
-            // Mostra mensagem de erro (não-alert para melhor UX)
-            const erroDiv = document.createElement('div');
-            erroDiv.style.cssText = 'background:#ffebee;color:#c62828;padding:10px;border-radius:8px;margin-top:10px;font-size:0.85rem;';
-            erroDiv.innerHTML = `<strong>⚠️ Atenção:</strong> ${mensagemErro}`;
-            
-            // Remove mensagens anteriores
-            const mensagensAnteriores = btnGoogle.parentNode.querySelector('.erro-login');
-            if (mensagensAnteriores) mensagensAnteriores.remove();
-            
-            erroDiv.className = 'erro-login';
-            btnGoogle.parentNode.appendChild(erroDiv);
-            
-            // Remove a mensagem após 5 segundos
-            setTimeout(() => {
-                if (erroDiv.parentNode) erroDiv.remove();
-            }, 5000);
         }
     };
 
-    // 2. LOGOUT
+    // --- LOGOUT ---
     window.fazerLogout = async () => {
+        if (!confirm("Deseja realmente sair da sua conta?")) return;
+        
         try {
             await signOut(auth);
-            // Recarrega para limpar estado
-            window.location.reload();
+            console.log("✅ Logout realizado");
+            
+            // Limpa estado
+            sessionStorage.removeItem('googleLoginInProgress');
+            
+            // Recarrega para garantir estado limpo
+            setTimeout(() => {
+                window.location.reload();
+            }, 300);
+            
         } catch (error) {
-            console.error("Erro ao sair:", error);
+            console.error("❌ Erro ao sair:", error);
             alert("Erro ao desconectar. Tente novamente.");
         }
     };
 
-    // 3. NAVEGAÇÃO
+    // --- NAVEGAÇÃO ---
     window.verificarLogin = () => {
         const user = auth.currentUser;
         if (user) {
@@ -737,7 +811,7 @@
         }
     };
 
-    // 4. LÓGICA DO MODAL
+    // --- LÓGICA DO MODAL ---
     window.abrirLogin = () => { 
         document.getElementById('modalLogin').style.display = 'flex'; 
         const user = auth.currentUser;
@@ -750,9 +824,6 @@
     
     window.fecharLogin = () => { 
         document.getElementById('modalLogin').style.display = 'none'; 
-        // Limpa mensagens de erro ao fechar
-        const erros = document.querySelectorAll('.erro-login');
-        erros.forEach(erro => erro.remove());
     };
     
     window.mostrarFormulario = () => { 
@@ -765,27 +836,42 @@
         document.getElementById('viewSocial').style.display = 'block'; 
     };
 
-    // 5. MOSTRAR PERFIL
+    // --- MOSTRAR PERFIL ---
     window.mostrarPerfil = (user) => {
         esconderTudo();
-        document.getElementById('viewLogged').style.display = 'block';
-        document.getElementById('nomeUsuarioLogado').innerText = user.displayName || "Cliente";
-        document.getElementById('emailUsuarioLogado').innerText = user.email;
-        if (user.photoURL) {
-            document.getElementById('imgPerfilUsuario').src = user.photoURL;
+        const viewLogged = document.getElementById('viewLogged');
+        if (viewLogged) {
+            viewLogged.style.display = 'block';
         }
+        
+        const nomeElement = document.getElementById('nomeUsuarioLogado');
+        const emailElement = document.getElementById('emailUsuarioLogado');
+        const imgElement = document.getElementById('imgPerfilUsuario');
+        
+        if (nomeElement) {
+            nomeElement.innerText = user.displayName || "Cliente";
+        }
+        if (emailElement) {
+            emailElement.innerText = user.email || "";
+        }
+        if (imgElement && user.photoURL) {
+            imgElement.src = user.photoURL;
+        }
+        
         buscarAgendamentosReal(user);
     };
 
-    // 6. BUSCAR AGENDAMENTOS (mantido igual)
+    // --- BUSCAR AGENDAMENTOS ---
     async function buscarAgendamentosReal(user) {
         const listaContainer = document.getElementById('containerAgendamentos');
         const contadorElement = document.getElementById('contadorAgendamentos');
         const totalElement = document.getElementById('totalAgendamentos');
         const statusFiltro = document.getElementById('statusFiltro');
         
+        if (!listaContainer) return;
+        
         listaContainer.innerHTML = '<div class="loading-spinner">🔍 Buscando seus agendamentos...</div>';
-        contadorElement.style.display = 'none';
+        if (contadorElement) contadorElement.style.display = 'none';
 
         try {
             const q = query(collection(db, "agendamentos"), where("uid", "==", user.uid));
@@ -794,7 +880,12 @@
             listaContainer.innerHTML = '';
 
             if (querySnapshot.empty) {
-                listaContainer.innerHTML = `<div class="sem-agendamentos"><div class="sem-agendamentos-icon">📅</div><strong>Nenhum agendamento encontrado</strong><br><small>Agende seu primeiro horário!</small></div>`;
+                listaContainer.innerHTML = `
+                    <div class="sem-agendamentos">
+                        <div class="sem-agendamentos-icon">📅</div>
+                        <strong>Nenhum agendamento encontrado</strong><br>
+                        <small>Agende seu primeiro horário!</small>
+                    </div>`;
                 return;
             }
 
@@ -807,9 +898,11 @@
                 return 0;
             });
 
-            contadorElement.style.display = 'flex';
-            totalElement.textContent = agendamentos.length;
-            statusFiltro.textContent = agendamentos.length + ' encontrado' + (agendamentos.length !== 1 ? 's' : '');
+            if (contadorElement) {
+                contadorElement.style.display = 'flex';
+                if (totalElement) totalElement.textContent = agendamentos.length;
+                if (statusFiltro) statusFiltro.textContent = agendamentos.length + ' encontrado' + (agendamentos.length !== 1 ? 's' : '');
+            }
 
             let agendamentosHTML = '';
             let delay = 0;
@@ -834,12 +927,16 @@
             });
             listaContainer.innerHTML = agendamentosHTML;
         } catch (error) {
-            console.error(error);
-            listaContainer.innerHTML = `<div style="color:#721c24; background:#f8d7da; padding:15px; border-radius:8px;">Erro ao carregar agendamentos.</div>`;
+            console.error("❌ Erro ao buscar agendamentos:", error);
+            listaContainer.innerHTML = `
+                <div style="color:#721c24; background:#f8d7da; padding:15px; border-radius:8px; text-align:center;">
+                    ⚠️ Erro ao carregar agendamentos.<br>
+                    <small>Tente novamente mais tarde.</small>
+                </div>`;
         }
     }
 
-    // FUNÇÕES AUXILIARES
+    // --- FUNÇÕES AUXILIARES ---
     function converterDataStringParaTimestamp(dataString) {
         if (!dataString || !dataString.includes('/')) return 0;
         try { 
@@ -881,66 +978,97 @@
     }
     
     function esconderTudo() { 
-        document.getElementById('viewEmail').style.display = 'none'; 
-        document.getElementById('viewSocial').style.display = 'none'; 
-        document.getElementById('viewLogged').style.display = 'none'; 
+        const viewEmail = document.getElementById('viewEmail');
+        const viewSocial = document.getElementById('viewSocial');
+        const viewLogged = document.getElementById('viewLogged');
+        
+        if (viewEmail) viewEmail.style.display = 'none';
+        if (viewSocial) viewSocial.style.display = 'none';
+        if (viewLogged) viewLogged.style.display = 'none';
     }
     
     window.toggleSenha = () => { 
-        const i = document.getElementById('senhaInput'); 
-        i.type = i.type === "password" ? "text" : "password"; 
+        const input = document.getElementById('senhaInput');
+        const icone = document.getElementById('iconeOlho');
+        if (input) {
+            const isPassword = input.type === "password";
+            input.type = isPassword ? "text" : "password";
+            if (icone) {
+                icone.innerHTML = isPassword ? 
+                    '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>' :
+                    '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+            }
+        }
     };
 
-    // 7. MONITORAR ESTADO DO USUÁRIO
+    // --- MONITORAR ESTADO DE AUTENTICAÇÃO ---
     onAuthStateChanged(auth, (user) => {
         const btnHome = document.getElementById('btnEntrar');
+        if (!btnHome) return;
+        
         if (user) {
-            // Usuário logado
-            btnHome.innerHTML = `<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg> ${user.displayName || 'Cliente'}`;
+            // USUÁRIO LOGADO
+            console.log("✅ Usuário autenticado:", user.email);
+            
+            btnHome.innerHTML = `
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+                </svg>
+                ${user.displayName || 'Cliente'}
+            `;
             btnHome.classList.add('logado');
             
             // Se o modal estiver aberto, atualiza para a vista logada
-            if(document.getElementById('modalLogin').style.display === 'flex') {
+            const modalLogin = document.getElementById('modalLogin');
+            if (modalLogin && modalLogin.style.display === 'flex') {
                 mostrarPerfil(user);
             }
+            
         } else {
-            // Usuário deslogado
-            btnHome.innerHTML = `<svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg> Entrar`;
+            // USUÁRIO DESLOGADO
+            console.log("👤 Usuário não autenticado");
+            
+            btnHome.innerHTML = `
+                <svg viewBox="0 0 24 24">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                    <polyline points="10 17 15 12 10 7"></polyline>
+                    <line x1="15" y1="12" x2="3" y2="12"></line>
+                </svg>
+                Entrar
+            `;
             btnHome.classList.remove('logado');
+            btnHome.style.color = 'var(--cor-principal)';
+            
+            // Limpa estado
+            sessionStorage.removeItem('googleLoginInProgress');
         }
     });
 
-    // Adiciona CSS para animação do spinner
+    // --- ESTILO PARA SPINNER ---
     const style = document.createElement('style');
     style.textContent = `
         @keyframes spin { 
             0% { transform: rotate(0deg); } 
             100% { transform: rotate(360deg); } 
         }
-        
-        /* Estilo para dispositivos móveis */
-        @media (max-width: 768px) {
-            .btn-google:disabled {
-                opacity: 0.7;
-            }
+        .btn-google:disabled {
+            cursor: not-allowed;
         }
     `;
     document.head.appendChild(style);
 
-    // Verifica se há usuário logado ao carregar a página
-    // Útil para quando o usuário retorna de um redirect
-    window.addEventListener('load', () => {
-        const user = auth.currentUser;
-        if (user && document.getElementById('modalLogin').style.display === 'none') {
-            // Atualiza o botão mesmo que o modal não esteja aberto
-            const btnHome = document.getElementById('btnEntrar');
-            btnHome.innerHTML = `<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg> ${user.displayName || 'Cliente'}`;
-            btnHome.classList.add('logado');
-        }
+    // --- INICIALIZAÇÃO ---
+    console.log("🔥 Firebase inicializado");
+    console.log("📱 Mobile detectado:", isMobileDevice());
+    
+    // Limpa estado ao carregar
+    window.addEventListener('beforeunload', () => {
+        sessionStorage.removeItem('googleLoginInProgress');
     });
 </script>
 
 </body>
 
 </html>
+
 
