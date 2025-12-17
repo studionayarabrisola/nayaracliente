@@ -631,56 +631,35 @@
 
     // --- TRATAR RETORNO DO REDIRECT (CRÍTICO PARA MOBILE) ---
    // --- TRATAR RETORNO DO REDIRECT (CORRIGIDO PARA MOBILE) ---
-    window.addEventListener('load', () => {
-        // Verifica se estavamos num processo de login (a flag que criaste antes)
-        const loginEmAndamento = sessionStorage.getItem('googleLoginInProgress');
+   window.addEventListener('load', () => {
+        // Não vamos usar IF. Vamos perguntar direto ao Firebase.
+        // Se não houver login, ele simplesmente não faz nada.
         
-        // Se houver a flag OU se houver parametros de auth na URL (dupla verificação)
-        // Chamamos o getRedirectResult de qualquer forma. Se não houver resultado, ele apenas retorna null.
-        if (loginEmAndamento === 'true') {
-            
-            console.log("📱 Detectado retorno de login via Redirect (Mobile/Tablet)");
-            
-            // Feedback visual enquanto processa
-            const btnGoogle = document.querySelector('.btn-google');
-            if(btnGoogle) {
-                btnGoogle.innerHTML = 'Validando login...';
-                btnGoogle.disabled = true;
-            }
-
-            getRedirectResult(auth)
-                .then((result) => {
-                    // Limpa a flag para não tentar processar novamente num refresh normal
-                    sessionStorage.removeItem('googleLoginInProgress');
-
-                    if (result) {
-                        console.log("✅ Login confirmado via Redirect!");
-                        const user = result.user;
-                        
-                        // Fecha o modal e atualiza a interface
-                        fecharLogin();
-                        if (window.mostrarPerfil) mostrarPerfil(user);
-                    } else {
-                        console.log("ℹ️ Nenhum resultado de redirecionamento capturado (pode já estar logado).");
-                    }
-                })
-                .catch((error) => {
-                    sessionStorage.removeItem('googleLoginInProgress');
-                    console.error("❌ Erro ao processar redirect:", error);
+        getRedirectResult(auth)
+            .then((result) => {
+                if (result) {
+                    // SUCESSO! O Google devolveu o usuário
+                    console.log("✅ Login recuperado com sucesso:", result.user.displayName);
+                    alert("Bem-vindo(a) " + result.user.displayName + "!"); // Alerta para confirmares no telemóvel
                     
-                    if(btnGoogle) {
-                        btnGoogle.innerHTML = 'Tentar novamente';
-                        btnGoogle.disabled = false;
-                    }
-
-                    // Tratamento específico para erro comum de domínio não autorizado
-                    if (error.code === 'auth/unauthorized-domain') {
-                        alert("Erro: Este domínio (GitHub Pages) não está autorizado no Firebase Console.");
-                    } else {
-                        alert("Falha no login: " + error.message);
-                    }
-                });
-        }
+                    fecharLogin();
+                    mostrarPerfil(result.user);
+                } else {
+                    // Nenhum login pendente. Vida normal.
+                    console.log("ℹ️ Nenhum retorno de redirect detectado.");
+                }
+            })
+            .catch((error) => {
+                // Aqui pegamos o erro real!
+                console.error("❌ Erro no Redirect:", error);
+                
+                // ESSE ALERTA É O MAIS IMPORTANTE
+                alert("Erro no Login: " + error.code + "\n" + error.message);
+                
+                if (error.code === 'auth/unauthorized-domain') {
+                    alert("⚠️ ATENÇÃO: O domínio do site não está autorizado no Firebase!");
+                }
+            });
     });
 
     // --- LOGIN GOOGLE (ESTRATÉGIA ADAPTATIVA) ---
@@ -1068,6 +1047,7 @@
 </body>
 
 </html>
+
 
 
 
