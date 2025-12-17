@@ -338,164 +338,184 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        // Importamos AMBOS: Redirect (para mobile) e Popup (para PC)
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    // Removemos 'signInWithRedirect' e 'getRedirectResult' para não causar confusão
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCLkHAL6V4xwfuLJbRYhnZcIAWRo6D2c1M",
-            authDomain: "agendanayara-e900b.firebaseapp.com",
-            projectId: "agendanayara-e900b",
-            storageBucket: "agendanayara-e900b.firebasestorage.app",
-            messagingSenderId: "306081027760",
-            appId: "1:306081027760:web:0cbdac4448e2672069cd75"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyCLkHAL6V4xwfuLJbRYhnZcIAWRo6D2c1M",
+        authDomain: "agendanayara-e900b.firebaseapp.com",
+        projectId: "agendanayara-e900b",
+        storageBucket: "agendanayara-e900b.firebasestorage.app",
+        messagingSenderId: "306081027760",
+        appId: "1:306081027760:web:0cbdac4448e2672069cd75"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
-        auth.languageCode = 'pt';
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+    auth.languageCode = 'pt';
 
-        const isMobileDevice = () => {
-            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        };
+    console.log("🔥 Firebase inicializado (Modo Popup Universal)");
 
-        console.log("🔥 Firebase ON. Modo Mobile:", isMobileDevice());
+    // --- LOGIN SIMPLIFICADO (POPUP PARA TODOS) ---
+    window.fazerLoginGoogle = async () => {
+        const btnGoogle = document.querySelector('.btn-google');
+        
+        // Feedback visual
+        if (btnGoogle) {
+            btnGoogle.innerHTML = 'Abrindo Google...';
+            btnGoogle.disabled = true;
+            btnGoogle.style.opacity = '0.7';
+        }
 
-        // --- 1. FUNÇÃO HÍBRIDA DE LOGIN ---
-        window.fazerLoginGoogle = async () => {
-            const btnGoogle = document.querySelector('.btn-google');
-            if (btnGoogle) {
-                btnGoogle.innerHTML = `<div style="width:16px;height:16px;border:2px solid #555;border-radius:50%;border-top-color:transparent;animation:spin 1s linear infinite;margin-right:8px;"></div> Processando...`;
-                btnGoogle.disabled = true;
-            }
-
-            try {
-                if (isMobileDevice()) {
-                    // MODO MOBILE: Usa REDIRECT (resolve o problema do "conectando" infinito)
-                    // Marcamos que o usuário tentou logar
-                    sessionStorage.setItem('loginEmAndamento', 'true');
-                    console.log("📱 Mobile detectado. Usando Redirect...");
-                    await signInWithRedirect(auth, provider);
-                    // A página vai recarregar sozinha, não faz mais nada aqui.
-                } else {
-                    // MODO PC: Usa POPUP (mais fluido)
-                    console.log("💻 PC detectado. Usando Popup...");
-                    const result = await signInWithPopup(auth, provider);
-                    console.log("✅ Login PC Sucesso:", result.user.displayName);
-                    fecharLogin(); // O monitor de estado atualiza a tela
-                }
-            } catch (error) {
-                console.error("❌ Erro no Login:", error);
-                if (btnGoogle) {
-                    btnGoogle.innerHTML = 'Tentar Google Novamente';
-                    btnGoogle.disabled = false;
-                }
-                alert("Erro ao conectar: " + error.message);
-            }
-        };
-
-        // --- 2. RECUPERAÇÃO DO LOGIN APÓS REDIRECT (MOBILE) ---
-        window.addEventListener('load', async () => {
-            // Só executa se estivermos esperando um login (para economizar recursos)
-            const loginPendente = sessionStorage.getItem('loginEmAndamento');
+        try {
+            console.log("🚀 Iniciando login via Popup...");
             
-            if (loginPendente) {
-                console.log("🔄 Verificando retorno do Google (Redirect)...");
-                try {
-                    const result = await getRedirectResult(auth);
-                    
-                    if (result) {
-                        console.log("✅ Login Mobile Confirmado!");
-                        sessionStorage.removeItem('loginEmAndamento');
-                        // O onAuthStateChanged vai cuidar da tela
-                    } else {
-                        // Se caiu aqui, o Google voltou mas sem usuário. 
-                        // 99% das vezes é porque o domínio não está autorizado.
-                        console.warn("⚠️ Retorno vazio.");
-                        sessionStorage.removeItem('loginEmAndamento');
-                        alert("⚠️ O login falhou silenciosamente.\n\nPor favor, verifique se o link 'studionayarabrisola.github.io' foi adicionado em 'Authorized Domains' no painel do Firebase.");
-                    }
-                } catch (error) {
-                    console.error("Erro no retorno:", error);
-                    sessionStorage.removeItem('loginEmAndamento');
-                    alert("Falha no login: " + error.message);
-                }
+            // Força o uso de POPUP mesmo no celular
+            // Isso evita o erro de "falha silenciosa" no retorno do redirect
+            const result = await signInWithPopup(auth, provider);
+            
+            // Se chegou aqui, funcionou!
+            console.log("✅ Sucesso:", result.user.displayName);
+            alert("Login realizado com sucesso!"); // Feedback claro pro usuário
+            
+            fecharLogin();
+            mostrarPerfil(result.user);
+
+        } catch (error) {
+            console.error("❌ Erro no Login:", error);
+
+            // Restaura o botão
+            if (btnGoogle) {
+                btnGoogle.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 48 48" style="vertical-align:middle;margin-right:5px">
+                        <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path>
+                        <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path>
+                        <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path>
+                        <path fill="#1976D2" d="M43.611,20.083L43.611,20.083C43.862,21.35,44,22.659,44,24c0,5.61-2.066,10.875-5.591,14.808l-6.19-5.238C33.21,32.571,34.025,31.309,34.591,29.897C35.842,26.791,36,23.473,34.996,20.083H43.611z"></path>
+                    </svg>
+                    Tentar Novamente
+                `;
+                btnGoogle.disabled = false;
+                btnGoogle.style.opacity = '1';
             }
-        });
 
-        // --- 3. MONITOR GERAL DE ESTADO ---
-        onAuthStateChanged(auth, (user) => {
-            const btnHome = document.getElementById('btnEntrar');
-            if (!btnHome) return;
+            // Tratamento de erros comuns
+            if (error.code === 'auth/popup-blocked') {
+                alert("⚠️ O SEU NAVEGADOR BLOQUEOU A JANELA!\n\nPor favor, clique em 'Permitir Pop-ups' se aparecer um aviso, ou tente abrir o site no Chrome.");
+            } else if (error.code === 'auth/popup-closed-by-user') {
+                console.log("Janela fechada pelo usuário");
+            } else if (error.code === 'auth/unauthorized-domain') {
+                alert("⚠️ Erro de Domínio: O link do GitHub ainda não propagou no Firebase. Aguarde alguns minutos.");
+            } else {
+                alert("Erro ao entrar: " + error.message);
+            }
+        }
+    };
 
-            if (user) {
-                console.log("👤 Logado:", user.email);
+    // --- LOGOUT ---
+    window.fazerLogout = async () => {
+        if (!confirm("Deseja sair da conta?")) return;
+        try { await signOut(auth); window.location.reload(); } 
+        catch (e) { alert("Erro ao sair"); }
+    };
+
+    // --- GERENCIAMENTO DE TELAS ---
+    window.verificarLogin = () => {
+        if (auth.currentUser) window.location.href = 'servicos.html';
+        else abrirLogin();
+    };
+
+    window.abrirLogin = () => { 
+        document.getElementById('modalLogin').style.display = 'flex'; 
+        if(!auth.currentUser) mostrarSocial();
+        else mostrarPerfil(auth.currentUser);
+    };
+    
+    window.fecharLogin = () => { document.getElementById('modalLogin').style.display = 'none'; };
+    
+    window.mostrarSocial = () => { 
+        document.getElementById('viewLogged').style.display = 'none';
+        document.getElementById('viewEmail').style.display = 'none';
+        document.getElementById('viewSocial').style.display = 'block'; 
+    };
+
+    window.mostrarFormulario = () => { 
+        document.getElementById('viewSocial').style.display = 'none';
+        document.getElementById('viewEmail').style.display = 'block'; 
+    };
+
+    // --- PERFIL DO USUÁRIO ---
+    window.mostrarPerfil = (user) => {
+        document.getElementById('viewSocial').style.display = 'none';
+        document.getElementById('viewLogged').style.display = 'block';
+        
+        document.getElementById('nomeUsuarioLogado').innerText = user.displayName || "Cliente";
+        document.getElementById('emailUsuarioLogado').innerText = user.email || "";
+        if(user.photoURL) document.getElementById('imgPerfilUsuario').src = user.photoURL;
+        
+        buscarAgendamentosReal(user);
+    };
+
+    // --- MONITOR DE ESTADO ---
+    onAuthStateChanged(auth, (user) => {
+        const btnHome = document.getElementById('btnEntrar');
+        if (user) {
+            console.log("👤 Logado:", user.email);
+            if(btnHome) {
                 btnHome.innerHTML = `<span style="color:#009e60">Olá, ${user.displayName ? user.displayName.split(' ')[0] : 'Cliente'}</span>`;
                 btnHome.classList.add('logado');
-                
-                // Se modal estiver aberto, mostra perfil
-                if(document.getElementById('modalLogin').style.display === 'flex') {
-                    mostrarPerfil(user);
-                }
-            } else {
-                console.log("👤 Deslogado");
-                btnHome.innerHTML = `<svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg> Entrar`;
+            }
+            // Se o modal estiver aberto na tela de login, muda pro perfil
+            const modal = document.getElementById('modalLogin');
+            if(modal && modal.style.display === 'flex' && document.getElementById('viewSocial').style.display === 'block') {
+                mostrarPerfil(user);
+            }
+        } else {
+            console.log("👤 Deslogado");
+            if(btnHome) {
+                btnHome.innerHTML = `Entrar`;
                 btnHome.classList.remove('logado');
-                mostrarSocial();
             }
-        });
-
-        // --- RESTANTE DA UI (Logout, Mostrar Perfil, etc) ---
-        window.fazerLogout = async () => {
-            if(confirm("Sair da conta?")) {
-                await signOut(auth);
-                window.location.reload();
-            }
-        };
-
-        window.abrirLogin = () => { 
-            document.getElementById('modalLogin').style.display = 'flex'; 
-            if(!auth.currentUser) mostrarSocial();
-            else mostrarPerfil(auth.currentUser);
-        };
-        window.fecharLogin = () => { document.getElementById('modalLogin').style.display = 'none'; };
-        window.mostrarSocial = () => { 
-            document.getElementById('viewLogged').style.display = 'none';
-            document.getElementById('viewSocial').style.display = 'block'; 
-            document.getElementById('viewEmail').style.display = 'none';
-        };
-        window.mostrarFormulario = () => {
-             document.getElementById('viewSocial').style.display = 'none'; 
-             document.getElementById('viewEmail').style.display = 'block';
-        };
-        window.verificarLogin = () => {
-            if(auth.currentUser) window.location.href = 'servicos.html';
-            else abrirLogin();
-        };
-
-        async function mostrarPerfil(user) {
-            document.getElementById('viewSocial').style.display = 'none';
-            document.getElementById('viewLogged').style.display = 'block';
-            document.getElementById('nomeUsuarioLogado').innerText = user.displayName || "Cliente";
-            if(user.photoURL) document.getElementById('imgPerfilUsuario').src = user.photoURL;
-
-            // Busca Agendamentos
-            const lista = document.getElementById('containerAgendamentos');
-            lista.innerHTML = 'Buscando...';
-            try {
-                const q = query(collection(db, "agendamentos"), where("uid", "==", user.uid));
-                const snap = await getDocs(q);
-                lista.innerHTML = '';
-                if(snap.empty) lista.innerHTML = '<div style="text-align:center;padding:10px;color:#888">Nenhum agendamento.</div>';
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    lista.innerHTML += `<div class="item-agendamento"><div><b>${d.data}</b> - ${d.hora}<br><small>${d.servico}</small></div><span style="color:green">Confirmado</span></div>`;
-                });
-            } catch(e) { lista.innerHTML = 'Erro ao buscar.'; }
         }
-    </script>
+    });
+
+    // --- BUSCA DE AGENDAMENTOS (Mantida a lógica original) ---
+    async function buscarAgendamentosReal(user) {
+        const lista = document.getElementById('containerAgendamentos');
+        if(!lista) return;
+        lista.innerHTML = '<div class="loading-spinner">Buscando...</div>';
+        
+        try {
+            const q = query(collection(db, "agendamentos"), where("uid", "==", user.uid));
+            const snap = await getDocs(q);
+            lista.innerHTML = '';
+            
+            if (snap.empty) {
+                lista.innerHTML = '<div class="sem-agendamentos">Sem agendamentos.</div>';
+                return;
+            }
+
+            snap.forEach(doc => {
+                const d = doc.data();
+                lista.innerHTML += `
+                    <div class="item-agendamento">
+                        <div>
+                            <strong>${d.data}</strong> - ${d.hora || ''}<br>
+                            <small>${d.servico}</small>
+                        </div>
+                        <span class="status-badge status-confirmado">Confirmado</span>
+                    </div>`;
+            });
+        } catch (e) {
+            console.error(e);
+            lista.innerHTML = 'Erro ao buscar dados.';
+        }
+    }
+</script>
 </body>
 </html>
+
