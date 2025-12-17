@@ -669,95 +669,41 @@
         }
     });
     // --- LOGIN GOOGLE (ESTRATÉGIA ADAPTATIVA) ---
-    window.fazerLoginGoogle = async () => {
+  window.fazerLoginGoogle = async () => {
         const btnGoogle = document.querySelector('.btn-google');
-        if (!btnGoogle) return;
-        
-        const textoOriginal = btnGoogle.innerHTML;
-        const isMobile = isMobileDevice();
-        
-        // Feedback visual imediato
-        btnGoogle.innerHTML = `
-            <div style="width:20px;height:20px;border:2px solid #fff;border-radius:50%;border-top-color:transparent;animation:spin 1s linear infinite;margin-right:8px;"></div>
-            ${isMobile ? 'Redirecionando...' : 'Conectando...'}
-        `;
-        btnGoogle.disabled = true;
-        btnGoogle.style.opacity = '0.8';
-        
-        console.log(`📱 Dispositivo: ${isMobile ? 'Mobile' : 'Desktop'}`);
-        
+        if (btnGoogle) {
+            btnGoogle.innerHTML = 'Conectando...';
+            btnGoogle.disabled = true;
+        }
+
         try {
-            if (isMobile) {
-                // MOBILE: USA REDIRECT (funciona melhor)
-                console.log("🔄 Usando signInWithRedirect para mobile...");
-                
-                // Armazena estado para saber que iniciamos um login
-                sessionStorage.setItem('googleLoginInProgress', 'true');
-                
-                // Para mobile, damos um tempo antes de mostrar alerta
-                setTimeout(() => {
-                    if (sessionStorage.getItem('googleLoginInProgress') === 'true') {
-                        alert("Você será redirecionado para a página de login do Google. Volte para esta página após fazer login.");
-                    }
-                }, 800);
-                
-                await signInWithRedirect(auth, provider);
-                // O usuário será redirecionado para página do Google
-                // O getRedirectResult() vai capturar quando voltar
-                
-            } else {
-                // DESKTOP: TENTA POPUP PRIMEIRO
-                console.log("🖥️ Tentando signInWithPopup...");
-                
-                try {
-                    await signInWithPopup(auth, provider);
-                    console.log("✅ Login via popup bem-sucedido!");
-                    fecharLogin(); // Fecha modal se popup funcionar
-                    sessionStorage.removeItem('googleLoginInProgress');
-                    
-                } catch (popupError) {
-                    console.log("⚠️ Popup falhou, tentando redirect...", popupError);
-                    
-                    // Se popup falhar, tenta redirect (para desktop também)
-                    if (popupError.code === 'auth/popup-blocked' || 
-                        popupError.code === 'auth/popup-closed-by-user' ||
-                        popupError.code.includes('popup')) {
-                        
-                        await signInWithRedirect(auth, provider);
-                        alert("Usando redirecionamento. Volte para esta página após fazer login.");
-                    } else {
-                        throw popupError; // Re-lança outros erros
-                    }
-                }
-            }
+            // Tenta fazer login com POPUP (funciona melhor no GitHub Pages)
+            // Isso evita o erro de "handler.js" e a perda de sessão no redirect
+            const result = await signInWithPopup(auth, provider);
             
+            console.log("✅ Login com Popup realizado:", result.user.displayName);
+            alert("Sucesso! Bem-vindo(a) " + result.user.displayName);
+            
+            fecharLogin();
+            mostrarPerfil(result.user);
+
         } catch (error) {
-            console.error("❌ Erro no login:", error.code, error.message);
+            console.error("❌ Erro no Popup:", error);
             
-            // Limpa estado
-            sessionStorage.removeItem('googleLoginInProgress');
-            
-            // Restaura botão
-            setTimeout(() => {
-                btnGoogle.innerHTML = textoOriginal;
+            // Restaura o botão
+            if (btnGoogle) {
+                btnGoogle.innerHTML = 'Continuar com Google';
                 btnGoogle.disabled = false;
-                btnGoogle.style.opacity = '1';
-            }, 500);
-            
-            // Mensagens de erro amigáveis
+            }
+
             if (error.code === 'auth/popup-blocked') {
-                alert("O popup foi bloqueado pelo navegador. Por favor:\n1. Permita popups para este site\n2. Ou tente novamente - usaremos redirecionamento");
+                alert("O navegador bloqueou a janela de login.\nPor favor, permita 'Pop-ups' para este site nas configurações do navegador.");
             } else if (error.code === 'auth/popup-closed-by-user') {
-                // Não mostra alerta, apenas registra
-                console.log("Popup fechado pelo usuário");
-            } else if (error.code === 'auth/cancelled-popup-request') {
-                // Ignora
+                console.log("Usuário fechou a janela.");
             } else if (error.code === 'auth/unauthorized-domain') {
-                alert("Erro de configuração: Domínio não autorizado no Firebase.");
+                 alert("⚠️ Erro: Domínio não autorizado.\nVá ao Firebase Console > Authentication > Settings > Authorized Domains e adicione: studionayarabrisola.github.io");
             } else {
-                setTimeout(() => {
-                    alert("Não foi possível conectar com o Google.\nErro: " + (error.message || "Desconhecido"));
-                }, 300);
+                alert("Erro ao conectar: " + error.message);
             }
         }
     };
@@ -1053,6 +999,7 @@
 </body>
 
 </html>
+
 
 
 
